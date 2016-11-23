@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Money Manager</title>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<link rel="stylesheet" href="https://code.getmdl.io/1.2.1/material.blue_grey-light_blue.min.css" />
+	<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+	<div class="mdl-layout mdl-js-layout" id='app'>
+		<div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer
+            mdl-layout--fixed-header">
+    <header class="mdl-layout__header">
+      <div class="mdl-layout__header-row">
+        <div class="mdl-layout-spacer"></div>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable
+                    mdl-textfield--floating-label mdl-textfield--align-right">
+          <label class="mdl-button mdl-js-button mdl-button--icon"
+                 for="fixed-header-drawer-exp">
+            <i class="material-icons">search</i>
+          </label>
+          <div class="mdl-textfield__expandable-holder">
+            <input class="mdl-textfield__input" type="text" name="sample"
+                   id="fixed-header-drawer-exp">
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="mdl-layout__drawer">
+    <span class="mdl-layout-title">Money Manager</span>
+    <nav class="mdl-navigation">
+     <router-link to="/" class="mdl-navigation__link">Home</router-link>
+     <router-link to="/login" v-if="!user.authenticated" class="mdl-navigation__link">Login</router-link>
+     <router-link to="/register" v-if="!user.authenticated" class="mdl-navigation__link">Register</router-link>
+    </nav>
+  </div>
+  <main class="mdl-layout__content">
+    <div class="page-content">
+      <router-view></router-view>
+    </div>
+  </main>
+    </div>
+	</div>
+	<script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
+	<script src="https://code.getmdl.io/1.2.1/material.min.js"></script>
+	<script type="text/javascript" src="js/bundle.js"></script>
+</body>
+</html>
