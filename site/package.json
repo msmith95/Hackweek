@@ -1,0 +1,30 @@
+{
+  "name": "advanced-web-dev-hack-week",
+  "version": "1.0.0",
+  "description": "Hack Week project for CS4830",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/msmith95/Hackweek.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/msmith95/Hackweek/issues"
+  },
+  "homepage": "https://github.com/msmith95/Hackweek#readme",
+  "dependencies": {
+    "babel-core": "^6.18.2",
+    "babel-loader": "^6.2.8",
+    "babel-preset-latest": "^6.16.0",
+    "css-loader": "^0.26.0",
+    "vue": "^2.1.0",
+    "vue-loader": "^10.0.0",
+    "vue-resource": "^1.0.3",
+    "vue-template-compiler": "^2.1.0",
+    "webpack": "^1.13.3"
+  }
+}
