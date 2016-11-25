@@ -140,6 +140,7 @@
 
 <script>
 	import _ from 'lodash';
+	import store from '../storage';
 	export default {
 	    data() {
 	      return {
@@ -214,22 +215,31 @@
 	    	}
 	    },
 	    created(){
-	    	console.log("This is created " + new Date());
-	    	$("#loadingSpinner").addClass("is-active");
-			$("#loadingSpinner").show();
-			this.$http.get("https://jsonplaceholder.typicode.com/posts/1").then((response)=>{
-				console.log("Fetch completed");
-				$("#loadingSpinner").removeClass("is-active");
-				$("#loadingSpinner").hide();
-			})
-	    	this.income = [{id: 1, name: "Checking", value: 150.00}];
+			this.income = [{id: 1, name: "Checking", value: 150.00}];
 	    	this.expenses = [{id: 1, name: "Checking", category: "Food", budgeted: 150.00, spent: 75.00, remaining: 75.00}];
+			let vm = this;
+			if(!store.accounts[vm.$route.params.accountID]){
+				$("#loadingSpinner").addClass("is-active");
+				$("#loadingSpinner").show();
+				this.$http.get("https://jsonplaceholder.typicode.com/posts/1").then((response)=>{
+					console.log("Fetch completed");
+					$("#loadingSpinner").removeClass("is-active");
+					$("#loadingSpinner").hide();
+					store.accounts[vm.$route.params.accountID] = true;
+					store.expenseItems[vm.$route.params.accountID] = this.expenses;
+					store.incomeItems[vm.$route.params.accountID] = this.income;
+				})
+			}
+			console.log(store);
 	    },
 	    beforeCreate(){
 	    	console.log("This is before create " + new Date());
 	    },
 	    mounted(){
+	    	$("#rightIcon").hide();
 	    	$('.modal').hide();
+	    	$("#createIcon").off();
+	    	$("#createIcon").click()
 			$("[data-modal-open]").click(function (){
 				var modalID = $(this).attr("data-modal-open");
 				var modal = $("[data-modal="+modalID+"]");

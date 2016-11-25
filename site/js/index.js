@@ -13,7 +13,6 @@ import _ from 'lodash';
 //import {router} from './router.js';
 
 auth.checkAuth();
-console.log(router);
 
 Vue.use(VueRouter);
 Vue.use(VueResource);
