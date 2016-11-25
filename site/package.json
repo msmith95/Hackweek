@@ -21,6 +21,7 @@
     "babel-loader": "^6.2.8",
     "babel-preset-latest": "^6.16.0",
     "css-loader": "^0.26.0",
+    "lodash": "^4.17.2",
     "vue": "^2.1.0",
     "vue-loader": "^10.0.0",
     "vue-resource": "^1.0.3",

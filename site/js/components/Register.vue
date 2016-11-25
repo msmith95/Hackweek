@@ -11,8 +11,13 @@
 				<label class="mdl-textfield__label" for="password">Password</label>
 			</div>
 		<br>
+			<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+				<input class="mdl-textfield__input" type="password" id="confirm_password" v-model="credentials.password">
+				<label class="mdl-textfield__label" for="password">Confirm Password</label>
+			</div>
+		<br>
 			<button v-on:click.prevent="submit()" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
-			Login
+			Register
 			</button>
 		</form>
 	</div>
@@ -51,7 +56,7 @@
 	        }
 	        // We need to pass the component's this context
 	        // to properly make use of http in the auth service
-	        //auth.login(this, credentials, 'secretquote')
+	        //auth.signup(this, credentials, 'secretquote')
 	        auth.user.authenticated = true;
 	        this.$router.push('/');
 	      }
