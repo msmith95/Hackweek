@@ -13,6 +13,7 @@
             mdl-layout--fixed-header">
     <header class="mdl-layout__header">
       <div class="mdl-layout__header-row">
+          <i class="material-icons hiddenBackButton" v-on:click="goBack()" id="backButton">arrow_back</i>
         <div class="mdl-layout-spacer"></div>
         <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable
                     mdl-textfield--floating-label mdl-textfield--align-right">
@@ -38,6 +39,7 @@
     </nav>
   </div>
   <main class="mdl-layout__content">
+      <div class="mdl-spinner mdl-js-spinner spinnerPos" id="loadingSpinner"></div>
     <div class="page-content">
       <router-view></router-view>
     </div>

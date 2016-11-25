@@ -2,7 +2,8 @@
 	<div>
 		<div class="mdl-grid">
 			<div class="mdl-cell mdl-cell--1-col mdl-cell--11-offset">
-				<button v-on:click="editBudget()">Edit Budget</button>
+				<!--<button v-on:click="editBudget()">Edit Budget</button>-->
+				<router-link class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" :to="{ name: 'editBudget', params: { accountID: this.$route.params.accountID }}" tag="button">Edit Budget</router-link>
 			</div>
 		</div>
 		<div class="mdl-grid">
@@ -27,13 +28,13 @@
 						<td>{{ item.budgeted }}</td>
 						<td>{{ item.spent }}</td>
 						<td>{{ item.remaining }}</td>
-						<td><i class="material-icons pointer">delete</i></td>
+						<td><i class="material-icons pointer" v-on:click="editExpense(item.id)">create</i></td>
 					</tr>
 					</tbody>
 				</table>
 				<button data-modal-open="addExpense"
-						class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
-					Add New Expense Item
+						class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent mt-15">
+					Add Expenditure
 				</button>
 
 			</div>
@@ -42,23 +43,21 @@
 				<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" v-if="expenses.length > 0">
 					<thead>
 					<tr>
-						<th class="mdl-data-table__cell--non-numeric">Income</th>
-						<th class="mdl-data-table__cell--non-numeric">Category</th>
-						<th>Value</th>
+						<th class="mdl-data-table__cell--non-numeric">Source</th>
+						<th>Income</th>
 						<th></th>
 					</tr>
 					</thead>
 					<tbody>
 					<tr v-for="item in income">
 						<td class="mdl-data-table__cell--non-numeric">{{ item.name }}</td>
-						<td class="mdl-data-table__cell--non-numeric">{{ item.category }}</td>
 						<td>{{ item.value }}</td>
 						<td><i class="material-icons pointer" v-on:click="deleteIncome(item.id)">delete</i></td>
 					</tr>
 					</tbody>
 				</table>
 				<button data-modal-open="addIncome"
-						class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+						class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent mt-15">
 					Add Income
 				</button>
 			</div>
@@ -85,7 +84,7 @@
 						<br>
 						<button v-on:click.prevent="addExpenseItem()"
 								class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
-							Login
+							Save
 						</button>
 					</form>
 				</div>
@@ -97,8 +96,42 @@
 							<i class="material-icons pointer" data-modal-close="addIncome">close</i>
 						</div>
 					</div>
-					<p>This is a test modal.</p>
-					<button data-modal-close="addIncome">Close</button>
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="incomeName"
+							   v-model="incomeItem.name">
+						<label class="mdl-textfield__label" for="incomeName">Income Name</label>
+					</div>
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="number" id="incomeValue"
+							   v-model="incomeItem.value">
+						<label class="mdl-textfield__label" for="incomeValue">How Much?</label>
+					</div>
+					<button v-on:click.prevent="addIncome()"
+							class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+						Save
+					</button>
+				</div>
+			</div>
+			<div class="modal" data-modal="editExpense">
+				<div class="modal-content">
+					<div class="mdl-grid">
+						<div class="mdl-cell--1-col mdl-cell--11-offset">
+							<i class="material-icons pointer" data-modal-close="editExpense">close</i>
+						</div>
+					</div>
+					<div class="mdl-textfield mdl-js-textfield">
+						<input class="mdl-textfield__input" type="text" id="editName"
+							   :value="expenseItem.name" readonly>
+					</div>
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="number" id="editValue"
+							   v-model="expenseItem.value">
+						<label class="mdl-textfield__label" for="editValue">How much as been spent?</label>
+					</div>
+					<button v-on:click.prevent="saveEditedExpenseItem()"
+							class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+						Save
+					</button>
 				</div>
 			</div>
 		</div>
@@ -113,13 +146,14 @@
 	      	income: [],
 	      	expenses: [],
 	      	incomeItem: {
-	      		category: 0,
-	      		value: 0
+	      		value: 0,
+	      		name: ''
 	      	},
 	      	expenseItem: {
 	      		name: '',
 	      		category: 0,
-	      		value: 0
+	      		value: 0,
+	      		index: 0
 	      	},
 	      	categoryList: [
 	      		"Groceries", "Gas", "Out to Eat", "Food"
@@ -132,8 +166,27 @@
 	    		console.log(index);
 	    		this.income.splice(index, 1);
 	    	},
-	    	editBudget(){
-
+	    	editExpense(id){
+				let index = _.findIndex(this.expenses, function(o) { return o.id == id; });
+				let item = this.expenses[index];
+				this.expenseItem.name = item.category;
+				this.expenseItem.value = item.spent;
+				this.expenseItem.index = index;
+				var modal = $("[data-modal=editExpense]");
+				var modalContent = modal.find(".modal-content");
+				modalContent.css("top", "0");
+				modal.show();
+				modalContent.animate({top: '35%'}, 300);
+	    	},
+	    	saveEditedExpenseItem(){
+	    		let item = this.expenses[this.expenseItem.index];
+	    		item.spent = this.expenseItem.value;
+	    		item.remaining = item.budgeted - item.spent;
+	    		this.expenses.splice(this.expenseItem.index, 1, item);
+	    		this.expenseItem.index = 0;
+	    		this.expenseItem.value = 0;
+	    		this.expenseItem.name = '';
+	    		$('[data-modal-close="editExpense"]').click();
 	    	},
 	    	addExpenseItem(){
 	    		let cat = this.categoryList;
@@ -149,11 +202,31 @@
 	    			snackbar.MaterialSnackbar.showSnackbar({message: "Expense Item added to budget."});
 	    			$('[data-modal-close="addExpense"]').click();
 	    		}
+	    	},
+	    	addIncome(){
+	    		let item = {};
+	    		item.name = this.incomeItem.name;
+	    		item.value = this.incomeItem.value;
+	    		this.incomeItem.name = '';
+	    		this.incomeItem.value = 0;
+	    		this.income.push(item);
+	    		$('[data-modal-close="addIncome"]').click();
 	    	}
 	    },
 	    created(){
-	    	this.income = [{id: 1, name: "Checking", category: "Work", value: 150.00}];
+	    	console.log("This is created " + new Date());
+	    	$("#loadingSpinner").addClass("is-active");
+			$("#loadingSpinner").show();
+			this.$http.get("https://jsonplaceholder.typicode.com/posts/1").then((response)=>{
+				console.log("Fetch completed");
+				$("#loadingSpinner").removeClass("is-active");
+				$("#loadingSpinner").hide();
+			})
+	    	this.income = [{id: 1, name: "Checking", value: 150.00}];
 	    	this.expenses = [{id: 1, name: "Checking", category: "Food", budgeted: 150.00, spent: 75.00, remaining: 75.00}];
+	    },
+	    beforeCreate(){
+	    	console.log("This is before create " + new Date());
 	    },
 	    mounted(){
 	    	$('.modal').hide();

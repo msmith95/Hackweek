@@ -5,3 +5,23 @@ html,body{
 .page-content{
 	margin-left:15px;
 }
+
+.horiz-center{
+	margin-left:auto;
+	margin-right:auto;
+}
+
+.mt-15{
+	margin-top: 15px;
+}
+
+.spinnerPos{
+	position: fixed;
+	top: 15%;
+	left: 50%;
+	display: none;
+}
+
+.hiddenBackButton{
+	display:none;
+}

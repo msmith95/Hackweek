@@ -8,6 +8,7 @@ import Register from './components/Register.vue';
 import AccountList from './components/AccountList.vue';
 import Account from './components/Account.vue';
 import EditAccount from './components/EditAccount.vue';
+import Dashboard from './components/Dashboard.vue';
 import _ from 'lodash';
 //import {router} from './router.js';
 
@@ -28,7 +29,8 @@ export let router = new VueRouter({
     { path: '/register', component: Register},
     { path: '/accounts', component: AccountList},
     { path: '/accounts/:accountID', name: 'accounts', component: Account},
-	  { path: '/accounts/:accountID/editBudget', component: EditAccount}
+	  { path: '/accounts/:accountID/editBudget', name: 'editBudget', component: EditAccount},
+	  { path: '/dashboard', component: Dashboard}
   ]
 });
 
@@ -48,5 +50,10 @@ const app = new Vue({
 	    var el = $("#app");
 	       componentHandler.upgradeElements(el);
 	   	});
-  	}
+  	},
+	methods:{
+  		goBack(){
+  			this.$router.back();
+		}
+	}
 });

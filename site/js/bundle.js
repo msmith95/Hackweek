@@ -87,11 +87,15 @@
 
 	var _Account2 = _interopRequireDefault(_Account);
 
-	var _EditAccount = __webpack_require__(29);
+	var _EditAccount = __webpack_require__(27);
 
 	var _EditAccount2 = _interopRequireDefault(_EditAccount);
 
-	var _lodash = __webpack_require__(26);
+	var _Dashboard = __webpack_require__(34);
+
+	var _Dashboard2 = _interopRequireDefault(_Dashboard);
+
+	var _lodash = __webpack_require__(32);
 
 	var _lodash2 = _interopRequireDefault(_lodash);
 
@@ -108,7 +112,7 @@
 	var router = exports.router = new _vueRouter2.default({
 	  mode: 'history',
 	  base: __dirname,
-	  routes: [{ path: '/', component: Home }, { path: '/login', component: _Login2.default }, { path: '/register', component: _Register2.default }, { path: '/accounts', component: _AccountList2.default }, { path: '/accounts/:accountID', name: 'accounts', component: _Account2.default }, { path: '/accounts/:accountID/editBudget', component: _EditAccount2.default }]
+	  routes: [{ path: '/', component: Home }, { path: '/login', component: _Login2.default }, { path: '/register', component: _Register2.default }, { path: '/accounts', component: _AccountList2.default }, { path: '/accounts/:accountID', name: 'accounts', component: _Account2.default }, { path: '/accounts/:accountID/editBudget', name: 'editBudget', component: _EditAccount2.default }, { path: '/dashboard', component: _Dashboard2.default }]
 	});
 
 	var app = new _vue2.default({
@@ -122,6 +126,12 @@
 	      var el = $("#app");
 	      componentHandler.upgradeElements(el);
 	    });
+	  },
+
+	  methods: {
+	    goBack: function goBack() {
+	      this.$router.back();
+	    }
 	  }
 	});
 	/* WEBPACK VAR INJECTION */}.call(exports, "/"))
@@ -12310,7 +12320,7 @@
 	      };
 
 	      _auth2.default.user.authenticated = true;
-	      this.$router.push('/');
+	      this.$router.push('/dashboard');
 	    }
 	  }
 	};
@@ -12701,6 +12711,9 @@
 	  methods: {},
 	  created: function created() {
 	    this.accountList = [{ id: 1, name: "Checking", balance: 1500.00 }];
+	  },
+	  mounted: function mounted() {
+	    $("#backButton").show();
 	  }
 	};
 
@@ -12710,7 +12723,7 @@
 
 	module.exports={render:function (){var _vm=this;
 	  return _vm._h('table', {
-	    staticClass: "mdl-data-table mdl-js-data-table mdl-shadow--2dp"
+	    staticClass: "mdl-data-table mdl-js-data-table mdl-shadow--2dp horiz-center"
 	  }, [_vm._m(0), " ", _vm._h('tbody', [_vm._l((_vm.accountList), function(account) {
 	    return _vm._h('tr', [_vm._h('td', {
 	      staticClass: "mdl-data-table__cell--non-numeric"
@@ -12751,7 +12764,7 @@
 	__vue_exports__ = __webpack_require__(25)
 
 	/* template */
-	var __vue_template__ = __webpack_require__(28)
+	var __vue_template__ = __webpack_require__(26)
 	__vue_options__ = __vue_exports__ = __vue_exports__ || {}
 	if (
 	  typeof __vue_exports__.default === "object" ||
@@ -12834,7 +12847,7 @@
 	  value: true
 	});
 
-	var _lodash = __webpack_require__(26);
+	var _lodash = __webpack_require__(32);
 
 	var _lodash2 = _interopRequireDefault(_lodash);
 
@@ -12846,13 +12859,14 @@
 	      income: [],
 	      expenses: [],
 	      incomeItem: {
-	        category: 0,
-	        value: 0
+	        value: 0,
+	        name: ''
 	      },
 	      expenseItem: {
 	        name: '',
 	        category: 0,
-	        value: 0
+	        value: 0,
+	        index: 0
 	      },
 	      categoryList: ["Groceries", "Gas", "Out to Eat", "Food"]
 	    };
@@ -12866,7 +12880,30 @@
 	      console.log(index);
 	      this.income.splice(index, 1);
 	    },
-	    editBudget: function editBudget() {},
+	    editExpense: function editExpense(id) {
+	      var index = _lodash2.default.findIndex(this.expenses, function (o) {
+	        return o.id == id;
+	      });
+	      var item = this.expenses[index];
+	      this.expenseItem.name = item.category;
+	      this.expenseItem.value = item.spent;
+	      this.expenseItem.index = index;
+	      var modal = $("[data-modal=editExpense]");
+	      var modalContent = modal.find(".modal-content");
+	      modalContent.css("top", "0");
+	      modal.show();
+	      modalContent.animate({ top: '35%' }, 300);
+	    },
+	    saveEditedExpenseItem: function saveEditedExpenseItem() {
+	      var item = this.expenses[this.expenseItem.index];
+	      item.spent = this.expenseItem.value;
+	      item.remaining = item.budgeted - item.spent;
+	      this.expenses.splice(this.expenseItem.index, 1, item);
+	      this.expenseItem.index = 0;
+	      this.expenseItem.value = 0;
+	      this.expenseItem.name = '';
+	      $('[data-modal-close="editExpense"]').click();
+	    },
 	    addExpenseItem: function addExpenseItem() {
 	      var cat = this.categoryList;
 	      var ei = this.expenseItem;
@@ -12883,11 +12920,31 @@
 	        snackbar.MaterialSnackbar.showSnackbar({ message: "Expense Item added to budget." });
 	        $('[data-modal-close="addExpense"]').click();
 	      }
+	    },
+	    addIncome: function addIncome() {
+	      var item = {};
+	      item.name = this.incomeItem.name;
+	      item.value = this.incomeItem.value;
+	      this.incomeItem.name = '';
+	      this.incomeItem.value = 0;
+	      this.income.push(item);
+	      $('[data-modal-close="addIncome"]').click();
 	    }
 	  },
 	  created: function created() {
-	    this.income = [{ id: 1, name: "Checking", category: "Work", value: 150.00 }];
+	    console.log("This is created " + new Date());
+	    $("#loadingSpinner").addClass("is-active");
+	    $("#loadingSpinner").show();
+	    this.$http.get("https://jsonplaceholder.typicode.com/posts/1").then(function (response) {
+	      console.log("Fetch completed");
+	      $("#loadingSpinner").removeClass("is-active");
+	      $("#loadingSpinner").hide();
+	    });
+	    this.income = [{ id: 1, name: "Checking", value: 150.00 }];
 	    this.expenses = [{ id: 1, name: "Checking", category: "Food", budgeted: 150.00, spent: 75.00, remaining: 75.00 }];
+	  },
+	  beforeCreate: function beforeCreate() {
+	    console.log("This is before create " + new Date());
 	  },
 	  mounted: function mounted() {
 	    $('.modal').hide();
@@ -12912,6 +12969,473 @@
 
 /***/ },
 /* 26 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports={render:function (){var _vm=this;
+	  return _vm._h('div', [_vm._h('div', {
+	    staticClass: "mdl-grid"
+	  }, [_vm._h('div', {
+	    staticClass: "mdl-cell mdl-cell--1-col mdl-cell--11-offset"
+	  }, [_vm._h('router-link', {
+	    staticClass: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent",
+	    attrs: {
+	      "to": {
+	        name: 'editBudget',
+	        params: {
+	          accountID: this.$route.params.accountID
+	        }
+	      },
+	      "tag": "button"
+	    }
+	  }, ["Edit Budget"])])]), " ", _vm._h('div', {
+	    staticClass: "mdl-grid"
+	  }, [_vm._h('div', {
+	    staticClass: "mdl-cell mdl-cell--4-col"
+	  }, ["\n\t\t\tpie chart\n\t\t"]), " ", _vm._h('div', {
+	    staticClass: "mdl-cell mdl-cell--4-col"
+	  }, [_vm._h('h4', ["Expenses:"]), " ", (_vm.expenses.length > 0) ? _vm._h('table', {
+	    staticClass: "mdl-data-table mdl-js-data-table mdl-shadow--2dp"
+	  }, [_vm._m(0), " ", _vm._h('tbody', [_vm._l((_vm.expenses), function(item) {
+	    return _vm._h('tr', [_vm._h('td', {
+	      staticClass: "mdl-data-table__cell--non-numeric"
+	    }, [_vm._s(item.category)]), " ", _vm._h('td', [_vm._s(item.budgeted)]), " ", _vm._h('td', [_vm._s(item.spent)]), " ", _vm._h('td', [_vm._s(item.remaining)]), " ", _vm._h('td', [_vm._h('i', {
+	      staticClass: "material-icons pointer",
+	      on: {
+	        "click": function($event) {
+	          _vm.editExpense(item.id)
+	        }
+	      }
+	    }, ["create"])])])
+	  })])]) : _vm._e(), " ", _vm._h('button', {
+	    staticClass: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent mt-15",
+	    attrs: {
+	      "data-modal-open": "addExpense"
+	    }
+	  }, ["\n\t\t\t\tAdd Expenditure\n\t\t\t"])]), " ", _vm._h('div', {
+	    staticClass: "mdl-cell mdl-cell--4-col"
+	  }, [_vm._h('h4', ["Income:"]), " ", (_vm.expenses.length > 0) ? _vm._h('table', {
+	    staticClass: "mdl-data-table mdl-js-data-table mdl-shadow--2dp"
+	  }, [_vm._m(1), " ", _vm._h('tbody', [_vm._l((_vm.income), function(item) {
+	    return _vm._h('tr', [_vm._h('td', {
+	      staticClass: "mdl-data-table__cell--non-numeric"
+	    }, [_vm._s(item.name)]), " ", _vm._h('td', [_vm._s(item.value)]), " ", _vm._h('td', [_vm._h('i', {
+	      staticClass: "material-icons pointer",
+	      on: {
+	        "click": function($event) {
+	          _vm.deleteIncome(item.id)
+	        }
+	      }
+	    }, ["delete"])])])
+	  })])]) : _vm._e(), " ", _vm._h('button', {
+	    staticClass: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent mt-15",
+	    attrs: {
+	      "data-modal-open": "addIncome"
+	    }
+	  }, ["\n\t\t\t\tAdd Income\n\t\t\t"])]), " ", _vm._h('div', {
+	    staticClass: "modal",
+	    attrs: {
+	      "data-modal": "addExpense"
+	    }
+	  }, [_vm._h('div', {
+	    staticClass: "modal-content"
+	  }, [_vm._m(2), " ", _vm._h('form', {
+	    attrs: {
+	      "action": "#"
+	    }
+	  }, [_vm._h('div', {}, [_vm._h('label', {
+	    attrs: {
+	      "for": "expenseCategory"
+	    }
+	  }, ["Category"]), " ", _vm._h('select', {
+	    directives: [{
+	      name: "model",
+	      rawName: "v-model",
+	      value: (_vm.expenseItem.category),
+	      expression: "expenseItem.category"
+	    }],
+	    attrs: {
+	      "id": "expenseCategory",
+	      "name": "expenseCategory"
+	    },
+	    on: {
+	      "change": function($event) {
+	        _vm.expenseItem.category = Array.prototype.filter.call($event.target.options, function(o) {
+	          return o.selected
+	        }).map(function(o) {
+	          var val = "_value" in o ? o._value : o.value;
+	          return val
+	        })[0]
+	      }
+	    }
+	  }, [_vm._l((_vm.categoryList), function(category, index) {
+	    return _vm._h('option', {
+	      domProps: {
+	        "value": index
+	      }
+	    }, [_vm._s(category)])
+	  })])]), " ", _vm._h('br'), " ", _vm._h('div', {
+	    staticClass: "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+	  }, [_vm._h('input', {
+	    directives: [{
+	      name: "model",
+	      rawName: "v-model",
+	      value: (_vm.expenseItem.value),
+	      expression: "expenseItem.value"
+	    }],
+	    staticClass: "mdl-textfield__input",
+	    attrs: {
+	      "type": "number",
+	      "id": "value"
+	    },
+	    domProps: {
+	      "value": _vm._s(_vm.expenseItem.value)
+	    },
+	    on: {
+	      "input": function($event) {
+	        if ($event.target.composing) { return; }
+	        _vm.expenseItem.value = _vm._n($event.target.value)
+	      }
+	    }
+	  }), " ", _vm._h('label', {
+	    staticClass: "mdl-textfield__label",
+	    attrs: {
+	      "for": "value"
+	    }
+	  }, ["How Much was spent?"])]), " ", _vm._h('br'), " ", _vm._h('button', {
+	    staticClass: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent",
+	    on: {
+	      "click": function($event) {
+	        $event.preventDefault();
+	        _vm.addExpenseItem()
+	      }
+	    }
+	  }, ["\n\t\t\t\t\t\tSave\n\t\t\t\t\t"])])])]), " ", _vm._h('div', {
+	    staticClass: "modal",
+	    attrs: {
+	      "data-modal": "addIncome"
+	    }
+	  }, [_vm._h('div', {
+	    staticClass: "modal-content"
+	  }, [_vm._m(3), " ", _vm._h('div', {
+	    staticClass: "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+	  }, [_vm._h('input', {
+	    directives: [{
+	      name: "model",
+	      rawName: "v-model",
+	      value: (_vm.incomeItem.name),
+	      expression: "incomeItem.name"
+	    }],
+	    staticClass: "mdl-textfield__input",
+	    attrs: {
+	      "type": "text",
+	      "id": "incomeName"
+	    },
+	    domProps: {
+	      "value": _vm._s(_vm.incomeItem.name)
+	    },
+	    on: {
+	      "input": function($event) {
+	        if ($event.target.composing) { return; }
+	        _vm.incomeItem.name = $event.target.value
+	      }
+	    }
+	  }), " ", _vm._h('label', {
+	    staticClass: "mdl-textfield__label",
+	    attrs: {
+	      "for": "incomeName"
+	    }
+	  }, ["Income Name"])]), " ", _vm._h('div', {
+	    staticClass: "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+	  }, [_vm._h('input', {
+	    directives: [{
+	      name: "model",
+	      rawName: "v-model",
+	      value: (_vm.incomeItem.value),
+	      expression: "incomeItem.value"
+	    }],
+	    staticClass: "mdl-textfield__input",
+	    attrs: {
+	      "type": "number",
+	      "id": "incomeValue"
+	    },
+	    domProps: {
+	      "value": _vm._s(_vm.incomeItem.value)
+	    },
+	    on: {
+	      "input": function($event) {
+	        if ($event.target.composing) { return; }
+	        _vm.incomeItem.value = _vm._n($event.target.value)
+	      }
+	    }
+	  }), " ", _vm._h('label', {
+	    staticClass: "mdl-textfield__label",
+	    attrs: {
+	      "for": "incomeValue"
+	    }
+	  }, ["How Much?"])]), " ", _vm._h('button', {
+	    staticClass: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent",
+	    on: {
+	      "click": function($event) {
+	        $event.preventDefault();
+	        _vm.addIncome()
+	      }
+	    }
+	  }, ["\n\t\t\t\t\tSave\n\t\t\t\t"])])]), " ", _vm._h('div', {
+	    staticClass: "modal",
+	    attrs: {
+	      "data-modal": "editExpense"
+	    }
+	  }, [_vm._h('div', {
+	    staticClass: "modal-content"
+	  }, [_vm._m(4), " ", _vm._h('div', {
+	    staticClass: "mdl-textfield mdl-js-textfield"
+	  }, [_vm._h('input', {
+	    staticClass: "mdl-textfield__input",
+	    attrs: {
+	      "type": "text",
+	      "id": "editName",
+	      "readonly": ""
+	    },
+	    domProps: {
+	      "value": _vm.expenseItem.name
+	    }
+	  })]), " ", _vm._h('div', {
+	    staticClass: "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+	  }, [_vm._h('input', {
+	    directives: [{
+	      name: "model",
+	      rawName: "v-model",
+	      value: (_vm.expenseItem.value),
+	      expression: "expenseItem.value"
+	    }],
+	    staticClass: "mdl-textfield__input",
+	    attrs: {
+	      "type": "number",
+	      "id": "editValue"
+	    },
+	    domProps: {
+	      "value": _vm._s(_vm.expenseItem.value)
+	    },
+	    on: {
+	      "input": function($event) {
+	        if ($event.target.composing) { return; }
+	        _vm.expenseItem.value = _vm._n($event.target.value)
+	      }
+	    }
+	  }), " ", _vm._h('label', {
+	    staticClass: "mdl-textfield__label",
+	    attrs: {
+	      "for": "editValue"
+	    }
+	  }, ["How much as been spent?"])]), " ", _vm._h('button', {
+	    staticClass: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent",
+	    on: {
+	      "click": function($event) {
+	        $event.preventDefault();
+	        _vm.saveEditedExpenseItem()
+	      }
+	    }
+	  }, ["\n\t\t\t\t\tSave\n\t\t\t\t"])])])])])
+	},staticRenderFns: [function (){var _vm=this;
+	  return _vm._h('thead', [_vm._h('tr', [_vm._h('th', {
+	    staticClass: "mdl-data-table__cell--non-numeric"
+	  }, ["Category"]), " ", _vm._h('th', ["Budgeted"]), " ", _vm._h('th', ["Spent"]), " ", _vm._h('th', ["Remaining"]), " ", _vm._h('th')])])
+	},function (){var _vm=this;
+	  return _vm._h('thead', [_vm._h('tr', [_vm._h('th', {
+	    staticClass: "mdl-data-table__cell--non-numeric"
+	  }, ["Source"]), " ", _vm._h('th', ["Income"]), " ", _vm._h('th')])])
+	},function (){var _vm=this;
+	  return _vm._h('div', {
+	    staticClass: "mdl-grid"
+	  }, [_vm._h('div', {
+	    staticClass: "mdl-cell--1-col mdl-cell--11-offset"
+	  }, [_vm._h('i', {
+	    staticClass: "material-icons pointer",
+	    attrs: {
+	      "data-modal-close": "addExpense"
+	    }
+	  }, ["close"])])])
+	},function (){var _vm=this;
+	  return _vm._h('div', {
+	    staticClass: "mdl-grid"
+	  }, [_vm._h('div', {
+	    staticClass: "mdl-cell--1-col mdl-cell--11-offset"
+	  }, [_vm._h('i', {
+	    staticClass: "material-icons pointer",
+	    attrs: {
+	      "data-modal-close": "addIncome"
+	    }
+	  }, ["close"])])])
+	},function (){var _vm=this;
+	  return _vm._h('div', {
+	    staticClass: "mdl-grid"
+	  }, [_vm._h('div', {
+	    staticClass: "mdl-cell--1-col mdl-cell--11-offset"
+	  }, [_vm._h('i', {
+	    staticClass: "material-icons pointer",
+	    attrs: {
+	      "data-modal-close": "editExpense"
+	    }
+	  }, ["close"])])])
+	}]}
+	if (false) {
+	  module.hot.accept()
+	  if (module.hot.data) {
+	     require("vue-hot-reload-api").rerender("data-v-792abb8e", module.exports)
+	  }
+	}
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __vue_exports__, __vue_options__
+	var __vue_styles__ = {}
+
+	/* styles */
+	__webpack_require__(28)
+
+	/* script */
+	__vue_exports__ = __webpack_require__(30)
+
+	/* template */
+	var __vue_template__ = __webpack_require__(31)
+	__vue_options__ = __vue_exports__ = __vue_exports__ || {}
+	if (
+	  typeof __vue_exports__.default === "object" ||
+	  typeof __vue_exports__.default === "function"
+	) {
+	if (Object.keys(__vue_exports__).some(function (key) { return key !== "default" && key !== "__esModule" })) {console.error("named exports are not supported in *.vue files.")}
+	__vue_options__ = __vue_exports__ = __vue_exports__.default
+	}
+	if (typeof __vue_options__ === "function") {
+	  __vue_options__ = __vue_options__.options
+	}
+	__vue_options__.__file = "/Users/Michael/Documents/Development/CS4830/hackweek/site/js/components/EditAccount.vue"
+	__vue_options__.render = __vue_template__.render
+	__vue_options__.staticRenderFns = __vue_template__.staticRenderFns
+
+	/* hot reload */
+	if (false) {(function () {
+	  var hotAPI = require("vue-hot-reload-api")
+	  hotAPI.install(require("vue"), false)
+	  if (!hotAPI.compatible) return
+	  module.hot.accept()
+	  if (!module.hot.data) {
+	    hotAPI.createRecord("data-v-7d5977cf", __vue_options__)
+	  } else {
+	    hotAPI.reload("data-v-7d5977cf", __vue_options__)
+	  }
+	})()}
+	if (__vue_options__.functional) {console.error("[vue-loader] EditAccount.vue: functional components are not supported and should be defined in plain js files using render functions.")}
+
+	module.exports = __vue_exports__
+
+
+/***/ },
+/* 28 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(29);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(11)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-7d5977cf!./../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./EditAccount.vue", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-7d5977cf!./../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./EditAccount.vue");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 29 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(10)();
+	// imports
+
+
+	// module
+	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+
+	// exports
+
+
+/***/ },
+/* 30 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.default = {
+	    data: function data() {
+	        return {
+	            categories: []
+	        };
+	    },
+	    created: function created() {
+	        this.categories = [{ id: 1, name: "Food", budgeted: 150.00 }];
+	    }
+	};
+
+/***/ },
+/* 31 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports={render:function (){var _vm=this;
+	  return _vm._h('div', [_vm._h('table', {
+	    staticClass: "mdl-data-table mdl-js-data-table mdl-shadow--2dp horiz-center"
+	  }, [_vm._m(0), " ", _vm._h('tbody', [_vm._l((_vm.categories), function(category) {
+	    return _vm._h('tr', [_vm._h('td', {
+	      staticClass: "mdl-data-table__cell--non-numeric"
+	    }, [_vm._s(category.name)]), " ", _vm._h('td', [_vm._h('div', {
+	      staticClass: "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+	    }, [_vm._h('input', {
+	      staticClass: "mdl-textfield__input",
+	      attrs: {
+	        "type": "number",
+	        "id": "value"
+	      },
+	      domProps: {
+	        "value": category.budgeted
+	      }
+	    })])])])
+	  })])]), " ", _vm._h('button', {
+	    staticClass: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent padding-top",
+	    attrs: {
+	      "data-modal-open": "addExpense"
+	    }
+	  }, ["\n        Save Changes\n    "])])
+	},staticRenderFns: [function (){var _vm=this;
+	  return _vm._h('thead', [_vm._h('tr', [_vm._h('th', {
+	    staticClass: "mdl-data-table__cell--non-numeric"
+	  }, ["Account Name"]), " ", _vm._h('th', {
+	    staticClass: "mdl-data-table__cell--non-numeric"
+	  }, ["Current Budgeted Amount"])])])
+	}]}
+	if (false) {
+	  module.hot.accept()
+	  if (module.hot.data) {
+	     require("vue-hot-reload-api").rerender("data-v-7d5977cf", module.exports)
+	  }
+	}
+
+/***/ },
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global, module) {/**
@@ -29980,10 +30504,10 @@
 	  }
 	}.call(this));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(27)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(33)(module)))
 
 /***/ },
-/* 27 */
+/* 33 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -29999,208 +30523,20 @@
 
 
 /***/ },
-/* 28 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports={render:function (){var _vm=this;
-	  return _vm._h('div', [_vm._h('div', {
-	    staticClass: "mdl-grid"
-	  }, [_vm._h('div', {
-	    staticClass: "mdl-cell mdl-cell--1-col mdl-cell--11-offset"
-	  }, [_vm._h('button', {
-	    on: {
-	      "click": function($event) {
-	        _vm.editBudget()
-	      }
-	    }
-	  }, ["Edit Budget"])])]), " ", _vm._h('div', {
-	    staticClass: "mdl-grid"
-	  }, [_vm._h('div', {
-	    staticClass: "mdl-cell mdl-cell--4-col"
-	  }, ["\n\t\t\tpie chart\n\t\t"]), " ", _vm._h('div', {
-	    staticClass: "mdl-cell mdl-cell--4-col"
-	  }, [_vm._h('h4', ["Expenses:"]), " ", (_vm.expenses.length > 0) ? _vm._h('table', {
-	    staticClass: "mdl-data-table mdl-js-data-table mdl-shadow--2dp"
-	  }, [_vm._m(0), " ", _vm._h('tbody', [_vm._l((_vm.expenses), function(item) {
-	    return _vm._h('tr', [_vm._h('td', {
-	      staticClass: "mdl-data-table__cell--non-numeric"
-	    }, [_vm._s(item.category)]), " ", _vm._h('td', [_vm._s(item.budgeted)]), " ", _vm._h('td', [_vm._s(item.spent)]), " ", _vm._h('td', [_vm._s(item.remaining)]), " ", _vm._m(1, true)])
-	  })])]) : _vm._e(), " ", _vm._h('button', {
-	    staticClass: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent",
-	    attrs: {
-	      "data-modal-open": "addExpense"
-	    }
-	  }, ["\n\t\t\t\tAdd New Expense Item\n\t\t\t"])]), " ", _vm._h('div', {
-	    staticClass: "mdl-cell mdl-cell--4-col"
-	  }, [_vm._h('h4', ["Income:"]), " ", (_vm.expenses.length > 0) ? _vm._h('table', {
-	    staticClass: "mdl-data-table mdl-js-data-table mdl-shadow--2dp"
-	  }, [_vm._m(2), " ", _vm._h('tbody', [_vm._l((_vm.income), function(item) {
-	    return _vm._h('tr', [_vm._h('td', {
-	      staticClass: "mdl-data-table__cell--non-numeric"
-	    }, [_vm._s(item.name)]), " ", _vm._h('td', {
-	      staticClass: "mdl-data-table__cell--non-numeric"
-	    }, [_vm._s(item.category)]), " ", _vm._h('td', [_vm._s(item.value)]), " ", _vm._h('td', [_vm._h('i', {
-	      staticClass: "material-icons pointer",
-	      on: {
-	        "click": function($event) {
-	          _vm.deleteIncome(item.id)
-	        }
-	      }
-	    }, ["delete"])])])
-	  })])]) : _vm._e(), " ", _vm._h('button', {
-	    staticClass: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent",
-	    attrs: {
-	      "data-modal-open": "addIncome"
-	    }
-	  }, ["\n\t\t\t\tAdd Income\n\t\t\t"])]), " ", _vm._h('div', {
-	    staticClass: "modal",
-	    attrs: {
-	      "data-modal": "addExpense"
-	    }
-	  }, [_vm._h('div', {
-	    staticClass: "modal-content"
-	  }, [_vm._m(3), " ", _vm._h('form', {
-	    attrs: {
-	      "action": "#"
-	    }
-	  }, [_vm._h('div', {}, [_vm._h('label', {
-	    attrs: {
-	      "for": "expenseCategory"
-	    }
-	  }, ["Category"]), " ", _vm._h('select', {
-	    directives: [{
-	      name: "model",
-	      rawName: "v-model",
-	      value: (_vm.expenseItem.category),
-	      expression: "expenseItem.category"
-	    }],
-	    attrs: {
-	      "id": "expenseCategory",
-	      "name": "expenseCategory"
-	    },
-	    on: {
-	      "change": function($event) {
-	        _vm.expenseItem.category = Array.prototype.filter.call($event.target.options, function(o) {
-	          return o.selected
-	        }).map(function(o) {
-	          var val = "_value" in o ? o._value : o.value;
-	          return val
-	        })[0]
-	      }
-	    }
-	  }, [_vm._l((_vm.categoryList), function(category, index) {
-	    return _vm._h('option', {
-	      domProps: {
-	        "value": index
-	      }
-	    }, [_vm._s(category)])
-	  })])]), " ", _vm._h('br'), " ", _vm._h('div', {
-	    staticClass: "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
-	  }, [_vm._h('input', {
-	    directives: [{
-	      name: "model",
-	      rawName: "v-model",
-	      value: (_vm.expenseItem.value),
-	      expression: "expenseItem.value"
-	    }],
-	    staticClass: "mdl-textfield__input",
-	    attrs: {
-	      "type": "number",
-	      "id": "value"
-	    },
-	    domProps: {
-	      "value": _vm._s(_vm.expenseItem.value)
-	    },
-	    on: {
-	      "input": function($event) {
-	        if ($event.target.composing) { return; }
-	        _vm.expenseItem.value = _vm._n($event.target.value)
-	      }
-	    }
-	  }), " ", _vm._h('label', {
-	    staticClass: "mdl-textfield__label",
-	    attrs: {
-	      "for": "value"
-	    }
-	  }, ["How Much was spent?"])]), " ", _vm._h('br'), " ", _vm._h('button', {
-	    staticClass: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent",
-	    on: {
-	      "click": function($event) {
-	        $event.preventDefault();
-	        _vm.addExpenseItem()
-	      }
-	    }
-	  }, ["\n\t\t\t\t\t\tLogin\n\t\t\t\t\t"])])])]), " ", _vm._m(4)])])
-	},staticRenderFns: [function (){var _vm=this;
-	  return _vm._h('thead', [_vm._h('tr', [_vm._h('th', {
-	    staticClass: "mdl-data-table__cell--non-numeric"
-	  }, ["Category"]), " ", _vm._h('th', ["Budgeted"]), " ", _vm._h('th', ["Spent"]), " ", _vm._h('th', ["Remaining"]), " ", _vm._h('th')])])
-	},function (){var _vm=this;
-	  return _vm._h('td', [_vm._h('i', {
-	    staticClass: "material-icons pointer"
-	  }, ["delete"])])
-	},function (){var _vm=this;
-	  return _vm._h('thead', [_vm._h('tr', [_vm._h('th', {
-	    staticClass: "mdl-data-table__cell--non-numeric"
-	  }, ["Income"]), " ", _vm._h('th', {
-	    staticClass: "mdl-data-table__cell--non-numeric"
-	  }, ["Category"]), " ", _vm._h('th', ["Value"]), " ", _vm._h('th')])])
-	},function (){var _vm=this;
-	  return _vm._h('div', {
-	    staticClass: "mdl-grid"
-	  }, [_vm._h('div', {
-	    staticClass: "mdl-cell--1-col mdl-cell--11-offset"
-	  }, [_vm._h('i', {
-	    staticClass: "material-icons pointer",
-	    attrs: {
-	      "data-modal-close": "addExpense"
-	    }
-	  }, ["close"])])])
-	},function (){var _vm=this;
-	  return _vm._h('div', {
-	    staticClass: "modal",
-	    attrs: {
-	      "data-modal": "addIncome"
-	    }
-	  }, [_vm._h('div', {
-	    staticClass: "modal-content"
-	  }, [_vm._h('div', {
-	    staticClass: "mdl-grid"
-	  }, [_vm._h('div', {
-	    staticClass: "mdl-cell--1-col mdl-cell--11-offset"
-	  }, [_vm._h('i', {
-	    staticClass: "material-icons pointer",
-	    attrs: {
-	      "data-modal-close": "addIncome"
-	    }
-	  }, ["close"])])]), " ", _vm._h('p', ["This is a test modal."]), " ", _vm._h('button', {
-	    attrs: {
-	      "data-modal-close": "addIncome"
-	    }
-	  }, ["Close"])])])
-	}]}
-	if (false) {
-	  module.hot.accept()
-	  if (module.hot.data) {
-	     require("vue-hot-reload-api").rerender("data-v-792abb8e", module.exports)
-	  }
-	}
-
-/***/ },
-/* 29 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_exports__, __vue_options__
 	var __vue_styles__ = {}
 
 	/* styles */
-	__webpack_require__(30)
+	__webpack_require__(35)
 
 	/* script */
-	__vue_exports__ = __webpack_require__(32)
+	__vue_exports__ = __webpack_require__(37)
 
 	/* template */
-	var __vue_template__ = __webpack_require__(33)
+	var __vue_template__ = __webpack_require__(38)
 	__vue_options__ = __vue_exports__ = __vue_exports__ || {}
 	if (
 	  typeof __vue_exports__.default === "object" ||
@@ -30212,7 +30548,7 @@
 	if (typeof __vue_options__ === "function") {
 	  __vue_options__ = __vue_options__.options
 	}
-	__vue_options__.__file = "/Users/Michael/Documents/Development/CS4830/hackweek/site/js/components/EditAccount.vue"
+	__vue_options__.__file = "/Users/Michael/Documents/Development/CS4830/hackweek/site/js/components/Dashboard.vue"
 	__vue_options__.render = __vue_template__.render
 	__vue_options__.staticRenderFns = __vue_template__.staticRenderFns
 
@@ -30223,24 +30559,24 @@
 	  if (!hotAPI.compatible) return
 	  module.hot.accept()
 	  if (!module.hot.data) {
-	    hotAPI.createRecord("data-v-7d5977cf", __vue_options__)
+	    hotAPI.createRecord("data-v-47476bc0", __vue_options__)
 	  } else {
-	    hotAPI.reload("data-v-7d5977cf", __vue_options__)
+	    hotAPI.reload("data-v-47476bc0", __vue_options__)
 	  }
 	})()}
-	if (__vue_options__.functional) {console.error("[vue-loader] EditAccount.vue: functional components are not supported and should be defined in plain js files using render functions.")}
+	if (__vue_options__.functional) {console.error("[vue-loader] Dashboard.vue: functional components are not supported and should be defined in plain js files using render functions.")}
 
 	module.exports = __vue_exports__
 
 
 /***/ },
-/* 30 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(31);
+	var content = __webpack_require__(36);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(11)(content, {});
@@ -30249,8 +30585,8 @@
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../node_modules/css-loader/index.js!./../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-7d5977cf!./../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./EditAccount.vue", function() {
-				var newContent = require("!!./../../node_modules/css-loader/index.js!./../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-7d5977cf!./../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./EditAccount.vue");
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-47476bc0!./../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Dashboard.vue", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-47476bc0!./../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Dashboard.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -30260,7 +30596,7 @@
 	}
 
 /***/ },
-/* 31 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(10)();
@@ -30268,13 +30604,13 @@
 
 
 	// module
-	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+	exports.push([module.id, "\n\n\n\n\n\n", ""]);
 
 	// exports
 
 
 /***/ },
-/* 32 */
+/* 37 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -30284,52 +30620,26 @@
 	});
 	exports.default = {
 	    data: function data() {
-	        return {
-	            categories: []
-	        };
+	        return {};
 	    },
 	    created: function created() {
-	        this.categories = [{ id: 1, name: "Food", budgeted: 150.00 }];
+	        $("#backButton").hide();
 	    }
 	};
 
 /***/ },
-/* 33 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports={render:function (){var _vm=this;
-	  return _vm._h('div', [_vm._h('table', {
-	    staticClass: "mdl-data-table mdl-js-data-table mdl-shadow--2dp"
-	  }, [_vm._m(0), " ", _vm._h('tbody', [_vm._l((_vm.categories), function(category) {
-	    return _vm._h('tr', [_vm._h('td', {
-	      staticClass: "mdl-data-table__cell--non-numeric"
-	    }, [_vm._s(category.name)]), " ", _vm._h('td', [_vm._h('div', {
-	      staticClass: "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
-	    }, [_vm._h('input', {
-	      staticClass: "mdl-textfield__input",
-	      attrs: {
-	        "type": "number",
-	        "id": "value"
-	      },
-	      domProps: {
-	        "value": category.budgeted
-	      }
-	    }), " ", _vm._h('label', {
-	      staticClass: "mdl-textfield__label",
-	      attrs: {
-	        "for": "value"
-	      }
-	    }, ["Budgeted Amount"])])])])
-	  })])])])
+	  return _vm._m(0)
 	},staticRenderFns: [function (){var _vm=this;
-	  return _vm._h('thead', [_vm._h('tr', [_vm._h('th', {
-	    staticClass: "mdl-data-table__cell--non-numeric"
-	  }, ["Account Name"]), " ", _vm._h('th', ["Current Projected Balance"])])])
+	  return _vm._h('div', [_vm._h('h1', ["Dashboard"])])
 	}]}
 	if (false) {
 	  module.hot.accept()
 	  if (module.hot.data) {
-	     require("vue-hot-reload-api").rerender("data-v-7d5977cf", module.exports)
+	     require("vue-hot-reload-api").rerender("data-v-47476bc0", module.exports)
 	  }
 	}
 

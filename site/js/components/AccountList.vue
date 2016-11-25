@@ -1,5 +1,5 @@
 <template>
-	<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+	<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp horiz-center">
 	  <thead>
 	    <tr>
 	      <th class="mdl-data-table__cell--non-numeric">Account Name</th>
@@ -26,6 +26,9 @@
 	    },
 	    created(){
 	    	this.accountList = [{id: 1, name: "Checking", balance: 1500.00}]
+	    },
+	    mounted(){
+			$("#backButton").show();
 	    }
 	}
 </script>

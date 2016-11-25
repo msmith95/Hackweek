@@ -53,7 +53,7 @@
 	        // to properly make use of http in the auth service
 	        //auth.login(this, credentials, 'secretquote')
 	        auth.user.authenticated = true;
-	        this.$router.push('/');
+	        this.$router.push('/dashboard');
 	      }
 	    },
 	}
