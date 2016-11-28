@@ -17,6 +17,10 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:api');
 
-Route::post('/register', function (Request $request){
+Route::post('/createAccount', 'AccountController@create')->middleware('auth:api');
 
-});
+Route::post('/deleteAccount', 'AccountController@deleteAccount')->middleware('auth:api');
+
+Route::post('/register', 'ApiAuthenticationController@register');
+
+Route::post('/login', 'ApiAuthenticationController@login');
