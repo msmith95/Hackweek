@@ -13,36 +13,35 @@ export default {
 
   // Send a request to the login URL and save the returned JWT
   login(context, creds, redirect) {
-    context.$http.post(LOGIN_URL, creds, (data) => {
-      localStorage.setItem('api_token', data.api_token);
+    context.$http.post(LOGIN_URL, creds).then((data) => {
+      localStorage.setItem('api_token', data.body.api_token);
 
       this.user.authenticated = true;
       console.log(data);
-      this.$router.push('/dashboard');
+      context.$router.push('/dashboard');
       // Redirect to a specified route
       // if(redirect) {
       //   router.go(redirect);
       // }
 
-    }).error((err) => {
-      context.error = err;
-    });
+    })
   },
 
   signup(context, creds, redirect) {
-    context.$http.post(SIGNUP_URL, creds, (data) => {
-      localStorage.setItem('api_token', data.api_token);
+    context.$http.post(SIGNUP_URL, creds).then((data) => {
+      console.log(data);
+      localStorage.setItem('api_token', data.body.api_token);
 
       this.user.authenticated = true;
 
-      console.log(data);
-      this.$router.push('/dashboard');
+
+      context.$router.push('/dashboard');
       // if(redirect) {
       //   router.go(redirect);
       // }
 
-    }).then((err) => {
-      context.error = err;
+    }).catch((err)=>{
+      console.log(err);
     });
   },
 

@@ -95,6 +95,14 @@
 
 	var _Dashboard2 = _interopRequireDefault(_Dashboard);
 
+	var _CreateBudget = __webpack_require__(40);
+
+	var _CreateBudget2 = _interopRequireDefault(_CreateBudget);
+
+	var _index3 = __webpack_require__(28);
+
+	var _index4 = _interopRequireDefault(_index3);
+
 	var _lodash = __webpack_require__(26);
 
 	var _lodash2 = _interopRequireDefault(_lodash);
@@ -106,12 +114,22 @@
 	_vue2.default.use(_vueRouter2.default);
 	_vue2.default.use(_vueResource2.default);
 
+	if (_index2.default.user.authenticated) {
+	  _vue2.default.http.get('http://service.michaeldsmithjr.com/api/user?api_token=' + localStorage.getItem('api_token')).then(function (response) {
+	    console.log(response);
+	    _lodash2.default.forEach(response.body.accounts, function (value) {
+	      _index4.default.accounts[value.id] = value;
+	    });
+	    console.log(_index4.default);
+	  }).catch(function (err) {});
+	}
+
 	var Home = { template: '<div><h2>Home</h2></div>' };
 
 	var router = exports.router = new _vueRouter2.default({
 	  mode: 'history',
 	  base: __dirname,
-	  routes: [{ path: '/', component: Home }, { path: '/login', component: _Login2.default }, { path: '/register', component: _Register2.default }, { path: '/accounts', component: _AccountList2.default }, { path: '/accounts/:accountID', name: 'accounts', component: _Account2.default }, { path: '/accounts/:accountID/editBudget', name: 'editBudget', component: _EditAccount2.default }, { path: '/dashboard', component: _Dashboard2.default }]
+	  routes: [{ path: '/', component: Home }, { path: '/login', component: _Login2.default }, { path: '/register', component: _Register2.default }, { path: '/accounts', component: _AccountList2.default }, { path: '/accounts/:accountID', name: 'accounts', component: _Account2.default }, { path: '/accounts/:accountID/editBudget', name: 'editBudget', component: _EditAccount2.default }, { path: '/dashboard', component: _Dashboard2.default }, { path: '/createBudget', component: _CreateBudget2.default }]
 	});
 
 	var app = new _vue2.default({
@@ -11881,28 +11899,26 @@
 	  login: function login(context, creds, redirect) {
 	    var _this = this;
 
-	    context.$http.post(LOGIN_URL, creds, function (data) {
-	      localStorage.setItem('api_token', data.api_token);
+	    context.$http.post(LOGIN_URL, creds).then(function (data) {
+	      localStorage.setItem('api_token', data.body.api_token);
 
 	      _this.user.authenticated = true;
 	      console.log(data);
-	      _this.$router.push('/dashboard');
-	    }).error(function (err) {
-	      context.error = err;
+	      context.$router.push('/dashboard');
 	    });
 	  },
 	  signup: function signup(context, creds, redirect) {
 	    var _this2 = this;
 
-	    context.$http.post(SIGNUP_URL, creds, function (data) {
-	      localStorage.setItem('api_token', data.api_token);
+	    context.$http.post(SIGNUP_URL, creds).then(function (data) {
+	      console.log(data);
+	      localStorage.setItem('api_token', data.body.api_token);
 
 	      _this2.user.authenticated = true;
 
-	      console.log(data);
-	      _this2.$router.push('/dashboard');
-	    }).then(function (err) {
-	      context.error = err;
+	      context.$router.push('/dashboard');
+	    }).catch(function (err) {
+	      console.log(err);
 	    });
 	  },
 	  logout: function logout() {
@@ -12613,8 +12629,8 @@
 	    directives: [{
 	      name: "model",
 	      rawName: "v-model",
-	      value: (_vm.credentials.passsword_confirmation),
-	      expression: "credentials.passsword_confirmation"
+	      value: (_vm.credentials.password_confirmation),
+	      expression: "credentials.password_confirmation"
 	    }],
 	    staticClass: "mdl-textfield__input",
 	    attrs: {
@@ -12622,12 +12638,12 @@
 	      "id": "confirm_password"
 	    },
 	    domProps: {
-	      "value": _vm._s(_vm.credentials.passsword_confirmation)
+	      "value": _vm._s(_vm.credentials.password_confirmation)
 	    },
 	    on: {
 	      "input": function($event) {
 	        if ($event.target.composing) { return; }
-	        _vm.credentials.passsword_confirmation = $event.target.value
+	        _vm.credentials.password_confirmation = $event.target.value
 	      }
 	    }
 	  }), " ", _vm._h('label', {
@@ -12698,31 +12714,47 @@
 
 /***/ },
 /* 20 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
+
+	var _storage = __webpack_require__(28);
+
+	var _storage2 = _interopRequireDefault(_storage);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 	exports.default = {
 		data: function data() {
 			return {
 				accountList: [],
 				account: {
 					name: '',
-					currentBalance: 0
+					balance: 0
 				}
 			};
 		},
 
 		methods: {
 			saveAccount: function saveAccount() {
-				$("[data-modal-close=addAccount]").click();
+				var vm = this;
+				this.$http.post("http://service.michaeldsmithjr.com/api/createAccount?api_token=" + localStorage.getItem('api_token'), this.account).then(function (response) {
+					console.log(response);
+					var account = { id: response.body.id, name: response.body.name, balance: response.body.balance };
+					_storage2.default.accounts[account.id] = account;
+					$("[data-modal-close=addAccount]").click();
+					vm.$router.push('/createBudget?id=' + account.id);
+				}).catch(function (err) {
+					console.log(err);
+				});
 			}
 		},
 		created: function created() {
-			this.accountList = [{ id: 1, name: "Checking", balance: 1500.00 }];
+			this.accountList = _storage2.default.accounts;
 		},
 		mounted: function mounted() {
 			$("#backButton").show();
@@ -12777,13 +12809,25 @@
 	  }, [_vm._m(1), " ", _vm._h('div', {
 	    staticClass: "mdl-textfield mdl-js-textfield"
 	  }, [_vm._h('input', {
+	    directives: [{
+	      name: "model",
+	      rawName: "v-model",
+	      value: (_vm.account.name),
+	      expression: "account.name"
+	    }],
 	    staticClass: "mdl-textfield__input",
 	    attrs: {
 	      "type": "text",
 	      "id": "addName"
 	    },
 	    domProps: {
-	      "value": _vm.account.name
+	      "value": _vm._s(_vm.account.name)
+	    },
+	    on: {
+	      "input": function($event) {
+	        if ($event.target.composing) { return; }
+	        _vm.account.name = $event.target.value
+	      }
 	    }
 	  }), " ", _vm._h('label', {
 	    staticClass: "mdl-textfield__label",
@@ -12796,8 +12840,8 @@
 	    directives: [{
 	      name: "model",
 	      rawName: "v-model",
-	      value: (_vm.account.currentBalance),
-	      expression: "account.currentBalance"
+	      value: (_vm.account.balance),
+	      expression: "account.balance"
 	    }],
 	    staticClass: "mdl-textfield__input",
 	    attrs: {
@@ -12805,12 +12849,12 @@
 	      "id": "addBalance"
 	    },
 	    domProps: {
-	      "value": _vm._s(_vm.account.currentBalance)
+	      "value": _vm._s(_vm.account.balance)
 	    },
 	    on: {
 	      "input": function($event) {
 	        if ($event.target.composing) { return; }
-	        _vm.account.currentBalance = _vm._n($event.target.value)
+	        _vm.account.balance = _vm._n($event.target.value)
 	      }
 	    }
 	  }), " ", _vm._h('label', {
@@ -13036,27 +13080,10 @@
 	    }
 	  },
 	  created: function created() {
-	    var _this = this;
+	    this.income = _storage2.default.accounts[this.$route.params.accountID].income_items;
+	    this.expenses = _storage2.default.accounts[this.$route.params.accountID].expense_items;
 
-	    this.income = [{ id: 1, name: "Checking", value: 150.00 }];
-	    this.expenses = [{ id: 1, name: "Checking", category: "Food", budgeted: 150.00, spent: 75.00, remaining: 75.00 }];
-	    var vm = this;
-	    if (!_storage2.default.accounts[vm.$route.params.accountID]) {
-	      $("#loadingSpinner").addClass("is-active");
-	      $("#loadingSpinner").show();
-	      this.$http.get("https://jsonplaceholder.typicode.com/posts/1").then(function (response) {
-	        console.log("Fetch completed");
-	        $("#loadingSpinner").removeClass("is-active");
-	        $("#loadingSpinner").hide();
-	        _storage2.default.accounts[vm.$route.params.accountID] = true;
-	        _storage2.default.expenseItems[vm.$route.params.accountID] = _this.expenses;
-	        _storage2.default.incomeItems[vm.$route.params.accountID] = _this.income;
-	      });
-	    }
 	    console.log(_storage2.default);
-	  },
-	  beforeCreate: function beforeCreate() {
-	    console.log("This is before create " + new Date());
 	  },
 	  mounted: function mounted() {
 	    $("#rightIcon").hide();
@@ -30772,7 +30799,7 @@
 	    attrs: {
 	      "for": "addBudget"
 	    }
-	  }, ["Current Account Balance"])]), " ", _vm._h('button', {
+	  }, ["Amount you want to budget?"])]), " ", _vm._h('button', {
 	    staticClass: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent",
 	    on: {
 	      "click": function($event) {
@@ -30924,6 +30951,319 @@
 	  module.hot.accept()
 	  if (module.hot.data) {
 	     require("vue-hot-reload-api").rerender("data-v-47476bc0", module.exports)
+	  }
+	}
+
+/***/ },
+/* 40 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __vue_exports__, __vue_options__
+	var __vue_styles__ = {}
+
+	/* styles */
+	__webpack_require__(41)
+
+	/* script */
+	__vue_exports__ = __webpack_require__(43)
+
+	/* template */
+	var __vue_template__ = __webpack_require__(44)
+	__vue_options__ = __vue_exports__ = __vue_exports__ || {}
+	if (
+	  typeof __vue_exports__.default === "object" ||
+	  typeof __vue_exports__.default === "function"
+	) {
+	if (Object.keys(__vue_exports__).some(function (key) { return key !== "default" && key !== "__esModule" })) {console.error("named exports are not supported in *.vue files.")}
+	__vue_options__ = __vue_exports__ = __vue_exports__.default
+	}
+	if (typeof __vue_options__ === "function") {
+	  __vue_options__ = __vue_options__.options
+	}
+	__vue_options__.__file = "/Users/Michael/Documents/Development/CS4830/hackweek/site/js/components/CreateBudget.vue"
+	__vue_options__.render = __vue_template__.render
+	__vue_options__.staticRenderFns = __vue_template__.staticRenderFns
+
+	/* hot reload */
+	if (false) {(function () {
+	  var hotAPI = require("vue-hot-reload-api")
+	  hotAPI.install(require("vue"), false)
+	  if (!hotAPI.compatible) return
+	  module.hot.accept()
+	  if (!module.hot.data) {
+	    hotAPI.createRecord("data-v-59b2be05", __vue_options__)
+	  } else {
+	    hotAPI.reload("data-v-59b2be05", __vue_options__)
+	  }
+	})()}
+	if (__vue_options__.functional) {console.error("[vue-loader] CreateBudget.vue: functional components are not supported and should be defined in plain js files using render functions.")}
+
+	module.exports = __vue_exports__
+
+
+/***/ },
+/* 41 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(42);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(11)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-59b2be05!./../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./CreateBudget.vue", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./../../node_modules/vue-loader/lib/style-rewriter.js?id=data-v-59b2be05!./../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./CreateBudget.vue");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 42 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(10)();
+	// imports
+
+
+	// module
+	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+
+	// exports
+
+
+/***/ },
+/* 43 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _lodash = __webpack_require__(26);
+
+	var _lodash2 = _interopRequireDefault(_lodash);
+
+	var _storage = __webpack_require__(28);
+
+	var _storage2 = _interopRequireDefault(_storage);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	exports.default = {
+	    data: function data() {
+	        return {
+	            categories: [],
+	            categoryList: ["Groceries", "Gas", "Out to Eat", "Food"],
+	            addedCategory: {
+	                name: '',
+	                index: 0,
+	                budgeted: 0
+	            }
+	        };
+	    },
+
+	    methods: {
+	        addCategory: function addCategory() {
+	            var item = {};
+	            item.category = this.categoryList[this.addedCategory.index];
+	            item.budgeted = this.addedCategory.budgeted;
+	            item.spent = 0;
+	            item.remaining = item.budgeted;
+	            this.categories.push(item);
+	            this.addedCategory.index = 0;
+	            this.addedCategory.budgeted = 0;
+	            $("[data-modal-close=addBudgetCategory]").click();
+	            var snackbar = document.querySelector('#toast');
+	            snackbar.MaterialSnackbar.showSnackbar({ message: "Expense Category added to budget." });
+	            $('[data-modal-close="addExpense"]').click();
+	        },
+	        deleteItem: function deleteItem(id) {
+	            var index = _lodash2.default.findIndex(this.categories, function (o) {
+	                return o.id == id;
+	            });
+	            console.log(index);
+	            this.categories.splice(index, 1);
+	        },
+	        saveBudget: function saveBudget() {
+	            var params = { accountID: this.$route.params.accountID, expenseItems: this.categories };
+	            var vm = this;
+	            this.$http.post('http://service.michaeldsmithjr.com/api/createBudget?api_token=' + localStorage.getItem('api_token'), params).then(function (response) {
+	                _storage2.default.accounts[params.accountID].expense_items = response.body;
+	                vm.$router.push('/accounts/' + params.accountID);
+	            }).catch(function (err) {
+	                console.log(err);
+	            });
+	        }
+	    },
+	    mounted: function mounted() {
+	        $('.modal').hide();
+	        $("[data-modal-close]").click(function () {
+	            var modalID = $(this).attr("data-modal-close");
+	            var modal = $("[data-modal=" + modalID + "]");
+	            var modalContent = modal.find(".modal-content");
+	            modalContent.animate({ top: '-50%' }, 300, function () {
+	                modal.hide();
+	            });
+	        });
+	        $("#rightIcon").off();
+	        $("#rightIcon").click(function () {
+	            var modal = $("[data-modal=addBudgetCategory]");
+	            var modalContent = modal.find(".modal-content");
+	            modalContent.css("top", "0");
+	            modal.show();
+	            modalContent.animate({ top: '35%' }, 300);
+	        });
+	        $("#rightIcon").show();
+	    }
+	};
+
+/***/ },
+/* 44 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports={render:function (){var _vm=this;
+	  return _vm._h('div', [_vm._h('table', {
+	    staticClass: "mdl-data-table mdl-js-data-table mdl-shadow--2dp horiz-center"
+	  }, [_vm._m(0), " ", _vm._h('tbody', [_vm._l((_vm.categories), function(category) {
+	    return _vm._h('tr', [_vm._h('td', {
+	      staticClass: "mdl-data-table__cell--non-numeric"
+	    }, [_vm._s(category.category)]), " ", _vm._h('td', [_vm._h('div', {
+	      staticClass: "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+	    }, [_vm._h('input', {
+	      staticClass: "mdl-textfield__input",
+	      attrs: {
+	        "type": "number",
+	        "id": "value"
+	      },
+	      domProps: {
+	        "value": category.budgeted
+	      }
+	    })])]), " ", _vm._h('td', [_vm._h('i', {
+	      staticClass: "material-icons pointer",
+	      on: {
+	        "click": function($event) {
+	          _vm.deleteItem(_vm.item.id)
+	        }
+	      }
+	    }, ["delete"])])])
+	  })])]), " ", _vm._h('button', {
+	    staticClass: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent padding-top",
+	    on: {
+	      "click": function($event) {
+	        _vm.saveBudget()
+	      }
+	    }
+	  }, ["\n        Save Budget\n    "]), " ", _vm._h('div', {
+	    staticClass: "modal",
+	    attrs: {
+	      "data-modal": "addBudgetCategory"
+	    }
+	  }, [_vm._h('div', {
+	    staticClass: "modal-content"
+	  }, [_vm._m(1), " ", _vm._h('div', {
+	    staticClass: "mdl-textfield mdl-js-textfield"
+	  }, [_vm._h('label', {
+	    attrs: {
+	      "for": "addCategory"
+	    }
+	  }, ["Category"]), " ", _vm._h('select', {
+	    directives: [{
+	      name: "model",
+	      rawName: "v-model",
+	      value: (_vm.addedCategory.index),
+	      expression: "addedCategory.index"
+	    }],
+	    attrs: {
+	      "id": "addCategory",
+	      "name": "expenseCategory"
+	    },
+	    on: {
+	      "change": function($event) {
+	        _vm.addedCategory.index = Array.prototype.filter.call($event.target.options, function(o) {
+	          return o.selected
+	        }).map(function(o) {
+	          var val = "_value" in o ? o._value : o.value;
+	          return val
+	        })[0]
+	      }
+	    }
+	  }, [_vm._l((_vm.categoryList), function(category, index) {
+	    return _vm._h('option', {
+	      domProps: {
+	        "value": index
+	      }
+	    }, [_vm._s(category)])
+	  })])]), " ", _vm._h('div', {
+	    staticClass: "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+	  }, [_vm._h('input', {
+	    directives: [{
+	      name: "model",
+	      rawName: "v-model",
+	      value: (_vm.addedCategory.budgeted),
+	      expression: "addedCategory.budgeted"
+	    }],
+	    staticClass: "mdl-textfield__input",
+	    attrs: {
+	      "type": "number",
+	      "id": "addBudget"
+	    },
+	    domProps: {
+	      "value": _vm._s(_vm.addedCategory.budgeted)
+	    },
+	    on: {
+	      "input": function($event) {
+	        if ($event.target.composing) { return; }
+	        _vm.addedCategory.budgeted = _vm._n($event.target.value)
+	      }
+	    }
+	  }), " ", _vm._h('label', {
+	    staticClass: "mdl-textfield__label",
+	    attrs: {
+	      "for": "addBudget"
+	    }
+	  }, ["Amount you want to budget?"])]), " ", _vm._h('button', {
+	    staticClass: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent",
+	    on: {
+	      "click": function($event) {
+	        $event.preventDefault();
+	        _vm.addCategory()
+	      }
+	    }
+	  }, ["\n                Save\n            "])])])])
+	},staticRenderFns: [function (){var _vm=this;
+	  return _vm._h('thead', [_vm._h('tr', [_vm._h('th', {
+	    staticClass: "mdl-data-table__cell--non-numeric"
+	  }, ["Budget Item"]), " ", _vm._h('th', {
+	    staticClass: "mdl-data-table__cell--non-numeric"
+	  }, ["Current Budgeted Amount"]), " ", _vm._h('th')])])
+	},function (){var _vm=this;
+	  return _vm._h('div', {
+	    staticClass: "mdl-grid"
+	  }, [_vm._h('div', {
+	    staticClass: "mdl-cell--1-col mdl-cell--11-offset"
+	  }, [_vm._h('i', {
+	    staticClass: "material-icons pointer",
+	    attrs: {
+	      "data-modal-close": "addBudgetCategory"
+	    }
+	  }, ["close"])])])
+	}]}
+	if (false) {
+	  module.hot.accept()
+	  if (module.hot.data) {
+	     require("vue-hot-reload-api").rerender("data-v-59b2be05", module.exports)
 	  }
 	}
 

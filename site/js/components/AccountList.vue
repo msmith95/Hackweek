@@ -23,12 +23,12 @@
                 </div>
                 <div class="mdl-textfield mdl-js-textfield">
                     <input class="mdl-textfield__input" type="text" id="addName"
-                           :value="account.name">
+                           v-model="account.name">
                     <label class="mdl-textfield__label" for="addName">Account Name</label>
                 </div>
                 <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                     <input class="mdl-textfield__input" type="number" id="addBalance"
-                           v-model="account.currentBalance">
+                           v-model="account.balance">
                     <label class="mdl-textfield__label" for="addBalance">Current Account Balance</label>
                 </div>
                 <button v-on:click.prevent="saveAccount()"
@@ -41,23 +41,35 @@
 </template>
 
 <script>
+    import store from '../storage';
 	 export default {
 	    data() {
 	      return {
 	      	accountList: [],
 	      	account:{
 	      	    name: '',
-	      	    currentBalance: 0
+	      	    balance: 0
 	      	}
 	      }
 	    },
 	    methods: {
 	        saveAccount(){
-	            $("[data-modal-close=addAccount]").click();
+	            let vm = this;
+	            this.$http.post("http://service.michaeldsmithjr.com/api/createAccount?api_token=" + localStorage.getItem('api_token'), this.account).then((response)=>{
+	                 console.log(response);
+	                 let account = {id: response.body.id, name: response.body.name, balance: response.body.balance};
+	                 store.accounts[account.id] = account;
+	                 $("[data-modal-close=addAccount]").click();
+                     vm.$router.push('/createBudget?id='+account.id);
+	            }).catch((err)=>{
+	                console.log(err);
+	            });
+
 	        }
 	    },
 	    created(){
-	    	this.accountList = [{id: 1, name: "Checking", balance: 1500.00}]
+	    	//this.accountList = [{id: 1, name: "Checking", balance: 1500.00}]
+	    	this.accountList = store.accounts;
 	    },
 	    mounted(){
 			$("#backButton").show();

@@ -12,7 +12,7 @@
 			</div>
 		<br>
 			<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-				<input class="mdl-textfield__input" type="password" id="confirm_password" v-model="credentials.passsword_confirmation">
+				<input class="mdl-textfield__input" type="password" id="confirm_password" v-model="credentials.password_confirmation">
 				<label class="mdl-textfield__label" for="password">Confirm Password</label>
 			</div>
 		<br>

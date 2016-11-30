@@ -9,6 +9,8 @@ import AccountList from './components/AccountList.vue';
 import Account from './components/Account.vue';
 import EditAccount from './components/EditAccount.vue';
 import Dashboard from './components/Dashboard.vue';
+import CreateBudget from './components/CreateBudget.vue';
+import store from './storage/index.js';
 import _ from 'lodash';
 //import {router} from './router.js';
 
@@ -16,6 +18,18 @@ auth.checkAuth();
 
 Vue.use(VueRouter);
 Vue.use(VueResource);
+
+if(auth.user.authenticated){
+	Vue.http.get('http://service.michaeldsmithjr.com/api/user?api_token=' + localStorage.getItem('api_token')).then((response)=>{
+		console.log(response);
+		_.forEach(response.body.accounts, function(value){
+			store.accounts[value.id] = value;
+		});
+		console.log(store);
+	}).catch((err)=>{
+
+	});
+}
 
 const Home = { template: '<div><h2>Home</h2></div>' };
 
@@ -29,7 +43,8 @@ export let router = new VueRouter({
     { path: '/accounts', component: AccountList},
     { path: '/accounts/:accountID', name: 'accounts', component: Account},
 	  { path: '/accounts/:accountID/editBudget', name: 'editBudget', component: EditAccount},
-	  { path: '/dashboard', component: Dashboard}
+	  { path: '/dashboard', component: Dashboard},
+	  { path: '/createBudget', component: CreateBudget}
   ]
 });
 
