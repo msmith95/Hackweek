@@ -10,7 +10,8 @@ class IncomeItemController extends Controller
 {
     public function createItem(Request $request){
         $user = $request->user();
-        $incomeItem = json_decode($request->input('incomeItem'), true);
+        //$incomeItem = json_decode($request->input('incomeItem'), true);
+        $incomeItem = $request->input('incomeItem');
 
         $incomeItem = new IncomeItem($incomeItem);
 

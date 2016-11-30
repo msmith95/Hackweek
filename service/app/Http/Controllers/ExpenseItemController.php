@@ -14,7 +14,7 @@ class ExpenseItemController extends Controller
         $account = Account::findAccountById($user, $id);
 
         $items = $request->input('expenseItems');
-        $items = json_decode($items, true);
+        //$items = json_decode($items, true);
         $array = array();
         foreach($items as $item){
             $array[] = new ExpenseItem($item);
@@ -43,7 +43,8 @@ class ExpenseItemController extends Controller
     public function updateBudget(Request $request){
         $accountID = $request->input('accountID');
         $user = $request->user();
-        $budgetItems = collect(json_decode($request->input('budgetItems')));
+        //$budgetItems = collect(json_decode($request->input('budgetItems')));
+        $budgetItems = collect($request->input('budgetItems'));
         $account = Account::findAccountById($user, $accountID);
         $expenseItems = $account->expenseItems;
 
