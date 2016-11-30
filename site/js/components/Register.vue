@@ -12,7 +12,7 @@
 			</div>
 		<br>
 			<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-				<input class="mdl-textfield__input" type="password" id="confirm_password" v-model="credentials.password">
+				<input class="mdl-textfield__input" type="password" id="confirm_password" v-model="credentials.passsword_confirmation">
 				<label class="mdl-textfield__label" for="password">Confirm Password</label>
 			</div>
 		<br>
@@ -43,7 +43,8 @@
 	        // properties that will be used in it
 	        credentials: {
 	          email: '',
-	          password: ''
+	          password: '',
+	          password_confirmation: ''
 	        },
 	        error: ''
 	      }
@@ -52,13 +53,14 @@
 	      submit() {
 	        var credentials = {
 	          email: this.credentials.email,
-	          password: this.credentials.password
+	          password: this.credentials.password,
+	          password_confirmation: this.credentials.password_confirmation
 	        }
 	        // We need to pass the component's this context
 	        // to properly make use of http in the auth service
-	        //auth.signup(this, credentials, 'secretquote')
-	        auth.user.authenticated = true;
-	        this.$router.push('/');
+	        auth.signup(this, credentials, 'secretquote')
+	       // auth.user.authenticated = true;
+
 	      }
 	    },
 	}

@@ -51,9 +51,9 @@
 	        }
 	        // We need to pass the component's this context
 	        // to properly make use of http in the auth service
-	        //auth.login(this, credentials, 'secretquote')
-	        auth.user.authenticated = true;
-	        this.$router.push('/dashboard');
+	        auth.login(this, credentials, 'secretquote')
+	        //auth.user.authenticated = true;
+
 	      }
 	    },
 	}

@@ -11869,9 +11869,9 @@
 	});
 
 
-	var API_URL = 'http://localhost:3001/';
-	var LOGIN_URL = API_URL + 'sessions/create/';
-	var SIGNUP_URL = API_URL + 'users/';
+	var API_URL = 'http://service.michaeldsmithjr.com/api/';
+	var LOGIN_URL = API_URL + 'login';
+	var SIGNUP_URL = API_URL + 'register';
 
 	exports.default = {
 	  user: {
@@ -11882,9 +11882,11 @@
 	    var _this = this;
 
 	    context.$http.post(LOGIN_URL, creds, function (data) {
-	      localStorage.setItem('id_token', data.id_token);
+	      localStorage.setItem('api_token', data.api_token);
 
 	      _this.user.authenticated = true;
+	      console.log(data);
+	      _this.$router.push('/dashboard');
 	    }).error(function (err) {
 	      context.error = err;
 	    });
@@ -11893,19 +11895,22 @@
 	    var _this2 = this;
 
 	    context.$http.post(SIGNUP_URL, creds, function (data) {
-	      localStorage.setItem('id_token', data.id_token);
+	      localStorage.setItem('api_token', data.api_token);
 
 	      _this2.user.authenticated = true;
-	    }).error(function (err) {
+
+	      console.log(data);
+	      _this2.$router.push('/dashboard');
+	    }).then(function (err) {
 	      context.error = err;
 	    });
 	  },
 	  logout: function logout() {
-	    localStorage.removeItem('id_token');
+	    localStorage.removeItem('api_token');
 	    this.user.authenticated = false;
 	  },
 	  checkAuth: function checkAuth() {
-	    var jwt = localStorage.getItem('id_token');
+	    var jwt = localStorage.getItem('api_token');
 	    if (jwt) {
 	      this.user.authenticated = true;
 	    } else {
@@ -11914,7 +11919,7 @@
 	  },
 	  getAuthHeader: function getAuthHeader() {
 	    return {
-	      'Authorization': 'Bearer ' + localStorage.getItem('id_token')
+	      'Authorization': 'Bearer ' + localStorage.getItem('api_token')
 	    };
 	  }
 	};
@@ -12318,8 +12323,7 @@
 	        password: this.credentials.password
 	      };
 
-	      _auth2.default.user.authenticated = true;
-	      this.$router.push('/dashboard');
+	      _auth2.default.login(this, credentials, 'secretquote');
 	    }
 	  }
 	};
@@ -12516,7 +12520,8 @@
 	    return {
 	      credentials: {
 	        email: '',
-	        password: ''
+	        password: '',
+	        password_confirmation: ''
 	      },
 	      error: ''
 	    };
@@ -12526,11 +12531,11 @@
 	    submit: function submit() {
 	      var credentials = {
 	        email: this.credentials.email,
-	        password: this.credentials.password
+	        password: this.credentials.password,
+	        password_confirmation: this.credentials.password_confirmation
 	      };
 
-	      _auth2.default.user.authenticated = true;
-	      this.$router.push('/');
+	      _auth2.default.signup(this, credentials, 'secretquote');
 	    }
 	  }
 	};
@@ -12608,8 +12613,8 @@
 	    directives: [{
 	      name: "model",
 	      rawName: "v-model",
-	      value: (_vm.credentials.password),
-	      expression: "credentials.password"
+	      value: (_vm.credentials.passsword_confirmation),
+	      expression: "credentials.passsword_confirmation"
 	    }],
 	    staticClass: "mdl-textfield__input",
 	    attrs: {
@@ -12617,12 +12622,12 @@
 	      "id": "confirm_password"
 	    },
 	    domProps: {
-	      "value": _vm._s(_vm.credentials.password)
+	      "value": _vm._s(_vm.credentials.passsword_confirmation)
 	    },
 	    on: {
 	      "input": function($event) {
 	        if ($event.target.composing) { return; }
-	        _vm.credentials.password = $event.target.value
+	        _vm.credentials.passsword_confirmation = $event.target.value
 	      }
 	    }
 	  }), " ", _vm._h('label', {
