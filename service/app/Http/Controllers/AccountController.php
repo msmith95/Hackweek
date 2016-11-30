@@ -16,7 +16,7 @@ class AccountController extends Controller
 
         $user->accounts()->save($account);
 
-        return response('', 200);
+        return $account;
     }
 
     public function deleteAccount(Request $request){
@@ -24,10 +24,11 @@ class AccountController extends Controller
         $user = $request->user();
 
         $accounts = $user->accounts;
-        $account = $accounts->first(function($value, $key) use ($id){
+        $account = Account::findAccountById($user, $id);
 
-            return $value->id == $id;
-        });
+        if($account === null){
+            return response('', 404);
+        }
 
         $account->delete();
 

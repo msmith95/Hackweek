@@ -17,10 +17,17 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:api');
 
-Route::post('/createAccount', 'AccountController@create')->middleware('auth:api');
-
-Route::post('/deleteAccount', 'AccountController@deleteAccount')->middleware('auth:api');
+Route::group(['middleware' => 'auth:api'], function(){
+    Route::post('/createAccount', 'AccountController@create');
+    Route::post('/deleteAccount', 'AccountController@deleteAccount');
+    Route::post('/createBudget', 'ExpenseItemController@createAll');
+    Route::post('/updateExpense', 'ExpenseItemController@updateExpenseItem');
+    Route::post('/updateBudget', 'ExpenseItemController@updateBudget');
+    Route::post('/updateBudgetItem', 'ExpenseItemController@updateBudgetItem');
+    Route::post('/deleteBudgetItem', 'ExpenseItemController@deleteBudgetItem');
+    Route::post('/createIncomeItem', 'IncomeItemController@createItem');
+    Route::post('/deleteIncomeItem', 'IncomeItemController@deleteItem');
+});
 
 Route::post('/register', 'ApiAuthenticationController@register');
-
 Route::post('/login', 'ApiAuthenticationController@login');

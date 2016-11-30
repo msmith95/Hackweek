@@ -16,8 +16,9 @@ class CreateExpenseItemTable extends Migration
         Schema::create('expense_items', function (Blueprint $table) {
             $table->increments('id');
             $table->string('category');
-            $table->integer('budgeted');
-            $table->integer('spent');
+            $table->double('budgeted', 12,2);
+            $table->double('spent', 12,2);
+            $table->double('remaining', 12,2);
             $table->integer('account_id')->unsigned();
             $table->timestamps();
         });
