@@ -11,11 +11,18 @@ class IncomeItemController extends Controller
     public function createItem(Request $request){
         $user = $request->user();
         //$incomeItem = json_decode($request->input('incomeItem'), true);
-        $incomeItem = $request->input('incomeItem');
+        //$incomeItem = $request->input('incomeItem');
+        $accountID = $request->input('accountID');
+        $account = Account::findAccountById($user, $accountID);
+        
+        $incomeName = $request->input('incomeName');
+        $incomeValue = $request->input('incomeValue');
 
-        $incomeItem = new IncomeItem($incomeItem);
+        $incomeItem = new IncomeItem();
+        $incomeItem->name = $incomeName;
+        $incomeItem->income = $incomeValue;
 
-        $user->incomeItems()->save($incomeItem);
+        $account->incomeItems()->save($incomeItem);
 
         return $incomeItem;
     }

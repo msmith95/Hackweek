@@ -95,7 +95,7 @@ class ExpenseItemController extends Controller
 
     private function findCurrentExpenseItems($expenseItems){
         $currentItems = $expenseItems->filter(function ($value, $key) {
-            return $value->id != null;
+            return $value['id'] != null;
         });
         return $currentItems;
     }
@@ -105,7 +105,7 @@ class ExpenseItemController extends Controller
      */
     private function findNewExpenseItems($expenseItems){
         $newItems = $expenseItems->filter(function ($value, $key) {
-            return $value->id == null;
+            return $value['id'] == null;
         });
 
         return $newItems;

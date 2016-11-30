@@ -51,7 +51,7 @@
 					<tbody>
 					<tr v-for="item in income">
 						<td class="mdl-data-table__cell--non-numeric">{{ item.name }}</td>
-						<td>{{ item.value }}</td>
+						<td>{{ item.income }}</td>
 						<td><i class="material-icons pointer" v-on:click="deleteIncome(item.id)">delete</i></td>
 					</tr>
 					</tbody>
@@ -219,10 +219,15 @@
 	    		let item = {};
 	    		item.name = this.incomeItem.name;
 	    		item.value = this.incomeItem.value;
-	    		this.incomeItem.name = '';
-	    		this.incomeItem.value = 0;
-	    		this.income.push(item);
-	    		$('[data-modal-close="addIncome"]').click();
+	    		let params = {accountID: this.$route.params.accountID, incomeName: item.name, incomeValue: item.value}
+	    		this.$http.post("http://service.michaeldsmithjr.com/api/createIncomeItem?api_token=" + localStorage.getItem('api_token'), params).then((response)=>{
+	    			this.incomeItem.name = '';
+					this.incomeItem.value = 0;
+					this.income.push(item);
+					$('[data-modal-close="addIncome"]').click();
+	    		}).catch((err)=>{
+	    			console.log(err);
+	    		});
 	    	}
 	    },
 	    created(){

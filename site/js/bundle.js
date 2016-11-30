@@ -13103,13 +13103,20 @@
 	      }
 	    },
 	    addIncome: function addIncome() {
+	      var _this3 = this;
+
 	      var item = {};
 	      item.name = this.incomeItem.name;
 	      item.value = this.incomeItem.value;
-	      this.incomeItem.name = '';
-	      this.incomeItem.value = 0;
-	      this.income.push(item);
-	      $('[data-modal-close="addIncome"]').click();
+	      var params = { accountID: this.$route.params.accountID, incomeName: item.name, incomeValue: item.value };
+	      this.$http.post("http://service.michaeldsmithjr.com/api/createIncomeItem?api_token=" + localStorage.getItem('api_token'), params).then(function (response) {
+	        _this3.incomeItem.name = '';
+	        _this3.incomeItem.value = 0;
+	        _this3.income.push(item);
+	        $('[data-modal-close="addIncome"]').click();
+	      }).catch(function (err) {
+	        console.log(err);
+	      });
 	    }
 	  },
 	  created: function created() {
@@ -30281,7 +30288,7 @@
 	  }, [_vm._m(1), " ", _vm._h('tbody', [_vm._l((_vm.income), function(item) {
 	    return _vm._h('tr', [_vm._h('td', {
 	      staticClass: "mdl-data-table__cell--non-numeric"
-	    }, [_vm._s(item.name)]), " ", _vm._h('td', [_vm._s(item.value)]), " ", _vm._h('td', [_vm._h('i', {
+	    }, [_vm._s(item.name)]), " ", _vm._h('td', [_vm._s(item.income)]), " ", _vm._h('td', [_vm._h('i', {
 	      staticClass: "material-icons pointer",
 	      on: {
 	        "click": function($event) {
