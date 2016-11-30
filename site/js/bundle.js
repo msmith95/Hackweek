@@ -11888,6 +11888,7 @@
 
 
 	var API_URL = 'http://service.michaeldsmithjr.com/api/';
+
 	var LOGIN_URL = API_URL + 'login';
 	var SIGNUP_URL = API_URL + 'register';
 

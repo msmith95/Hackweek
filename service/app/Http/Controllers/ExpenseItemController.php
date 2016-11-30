@@ -117,7 +117,8 @@ class ExpenseItemController extends Controller
      */
     private function updateExpenseItemAndSave($currentItems, $budgetItems){
         $currentItems->transform(function ($item, $key) use ($budgetItems) {
-            $item->budgeted = $budgetItems->where('id', $item->id)->first()->budgeted;
+            $bItem = $budgetItems->where('id', $item->id)->first();
+            $item->budgeted = $bItem['budgeted'];
             $item->save();
             return $item;
         });

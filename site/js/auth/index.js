@@ -1,6 +1,7 @@
 // import {router} from '../index';
 
 const API_URL = 'http://service.michaeldsmithjr.com/api/';
+//const API_URL = 'http://hackweek-service.dev/api/';
 const LOGIN_URL = API_URL + 'login';
 const SIGNUP_URL = API_URL + 'register';
 
