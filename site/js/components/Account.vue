@@ -183,11 +183,16 @@
 	    		let item = this.expenses[this.expenseItem.index];
 	    		item.spent = this.expenseItem.value;
 	    		item.remaining = item.budgeted - item.spent;
-	    		this.expenses.splice(this.expenseItem.index, 1, item);
-	    		this.expenseItem.index = 0;
-	    		this.expenseItem.value = 0;
-	    		this.expenseItem.name = '';
-	    		$('[data-modal-close="editExpense"]').click();
+	    		let params = {accountID: item.account_id, expenseID: item.id, spent: item.spent, remaining: item.remaining};
+	    		this.$http.post('http://service.michaeldsmithjr.com/api/updateExpense?api_token=' + localStorage.getItem('api_token'), params).then((response)=>{
+	    			this.expenses.splice(this.expenseItem.index, 1, item);
+					this.expenseItem.index = 0;
+					this.expenseItem.value = 0;
+					this.expenseItem.name = '';
+					$('[data-modal-close="editExpense"]').click();
+	    		}).catch((err)=>{
+	    			console.log(err);
+	    		});
 	    	},
 	    	addExpenseItem(){
 	    		let cat = this.categoryList;
@@ -196,12 +201,18 @@
 	    		if(index != -1){
 	    			let item = this.expenses[index];
 	    			item.spent += this.expenseItem.value;
-	    			this.expenses.splice(index, 1, item);
-	    			this.expenseItem.value = 0;
-	    			this.expenseItem.category = 0;
-	    			var snackbar = document.querySelector('#toast');
-	    			snackbar.MaterialSnackbar.showSnackbar({message: "Expense Item added to budget."});
-	    			$('[data-modal-close="addExpense"]').click();
+	    			item.remaining = item.budgeted - item.spent;
+	    			let params = {accountID: item.account_id, expenseID: item.id, spent: item.spent, remaining: item.remaining};
+	    			this.$http.post('http://service.michaeldsmithjr.com/api/updateExpense?api_token=' + localStorage.getItem('api_token'), params).then((response)=>{
+	    				this.expenses.splice(index, 1, item);
+						this.expenseItem.value = 0;
+						this.expenseItem.category = 0;
+						var snackbar = document.querySelector('#toast');
+						snackbar.MaterialSnackbar.showSnackbar({message: "Expense Item added to budget."});
+						$('[data-modal-close="addExpense"]').click();
+	    			}).catch((err)=>{
+	    				console.log(err);
+	    			});
 	    		}
 	    	},
 	    	addIncome(){

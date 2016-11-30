@@ -14,7 +14,7 @@
                 <td>
                     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                         <input class="mdl-textfield__input" type="number" id="value"
-                               :value="category.budgeted">
+                               v-model="category.budgeted">
                     </div>
                 </td>
                 <td>
@@ -23,7 +23,7 @@
             </tr>
             </tbody>
         </table>
-        <button data-modal-open="addExpense"
+        <button v-on:click="updateBudget()"
                 class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent padding-top">
             Save Changes
         </button>
@@ -77,12 +77,12 @@
         methods: {
             addCategory(){
                 let item = {};
+                item.id = null;
                 item.category = this.categoryList[this.addedCategory.index];
                 item.budgeted = this.addedCategory.budgeted;
                 item.spent = 0;
                 item.remaining = item.budgeted;
                 this.categories.push(item);
-                store.expenseItems[this.$route.params.accountID] = this.categories;
                 $("[data-modal-close=addBudgetCategory]").click();
                 var snackbar = document.querySelector('#toast');
                 snackbar.MaterialSnackbar.showSnackbar({message: "Expense Category added to budget."});
@@ -92,10 +92,19 @@
                 var index = _.findIndex(this.categories, function(o) { return o.id == id; });
 	    		console.log(index);
 	    		this.categories.splice(index, 1);
+            },
+            updateBudget(){
+                let params = {accountID: this.$route.params.accountID, budgetItems: this.categories};
+                let vm = this;
+                this.$http.post("http://service.michaeldsmithjr.com/api/updateBudget?api_token=" + localStorage.getItem('api_token'), params).then((response)=>{
+                    vm.$router.go(-1);
+                }).catch((err)=>{
+                    console.log(err);
+                });
             }
         },
         created(){
-	    	this.categories = store.expenseItems[this.$route.params.accountID];
+	    	this.categories = store.accounts[this.$route.params.accountID].expense_items;
 	    },
 	    mounted(){
 	        $('.modal').hide();

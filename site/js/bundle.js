@@ -83,7 +83,7 @@
 
 	var _AccountList2 = _interopRequireDefault(_AccountList);
 
-	var _Account = __webpack_require__(22);
+	var _Account = __webpack_require__(23);
 
 	var _Account2 = _interopRequireDefault(_Account);
 
@@ -99,11 +99,11 @@
 
 	var _CreateBudget2 = _interopRequireDefault(_CreateBudget);
 
-	var _index3 = __webpack_require__(28);
+	var _index3 = __webpack_require__(21);
 
 	var _index4 = _interopRequireDefault(_index3);
 
-	var _lodash = __webpack_require__(26);
+	var _lodash = __webpack_require__(27);
 
 	var _lodash2 = _interopRequireDefault(_lodash);
 
@@ -12679,7 +12679,7 @@
 	__vue_exports__ = __webpack_require__(20)
 
 	/* template */
-	var __vue_template__ = __webpack_require__(21)
+	var __vue_template__ = __webpack_require__(22)
 	__vue_options__ = __vue_exports__ = __vue_exports__ || {}
 	if (
 	  typeof __vue_exports__.default === "object" ||
@@ -12722,7 +12722,7 @@
 		value: true
 	});
 
-	var _storage = __webpack_require__(28);
+	var _storage = __webpack_require__(21);
 
 	var _storage2 = _interopRequireDefault(_storage);
 
@@ -12781,6 +12781,21 @@
 
 /***/ },
 /* 21 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.default = {
+		accounts: {},
+		expenseItems: {},
+		incomeItems: {}
+	};
+
+/***/ },
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports={render:function (){var _vm=this;
@@ -12895,17 +12910,17 @@
 	}
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_exports__, __vue_options__
 	var __vue_styles__ = {}
 
 	/* styles */
-	__webpack_require__(23)
+	__webpack_require__(24)
 
 	/* script */
-	__vue_exports__ = __webpack_require__(25)
+	__vue_exports__ = __webpack_require__(26)
 
 	/* template */
 	var __vue_template__ = __webpack_require__(29)
@@ -12942,13 +12957,13 @@
 
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(24);
+	var content = __webpack_require__(25);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(11)(content, {});
@@ -12968,7 +12983,7 @@
 	}
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(10)();
@@ -12982,7 +12997,7 @@
 
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -12991,11 +13006,11 @@
 	  value: true
 	});
 
-	var _lodash = __webpack_require__(26);
+	var _lodash = __webpack_require__(27);
 
 	var _lodash2 = _interopRequireDefault(_lodash);
 
-	var _storage = __webpack_require__(28);
+	var _storage = __webpack_require__(21);
 
 	var _storage2 = _interopRequireDefault(_storage);
 
@@ -13043,30 +13058,47 @@
 	      modalContent.animate({ top: '35%' }, 300);
 	    },
 	    saveEditedExpenseItem: function saveEditedExpenseItem() {
+	      var _this = this;
+
 	      var item = this.expenses[this.expenseItem.index];
 	      item.spent = this.expenseItem.value;
 	      item.remaining = item.budgeted - item.spent;
-	      this.expenses.splice(this.expenseItem.index, 1, item);
-	      this.expenseItem.index = 0;
-	      this.expenseItem.value = 0;
-	      this.expenseItem.name = '';
-	      $('[data-modal-close="editExpense"]').click();
+	      var params = { accountID: item.account_id, expenseID: item.id, spent: item.spent, remaining: item.remaining };
+	      this.$http.post('http://service.michaeldsmithjr.com/api/updateExpense?api_token=' + localStorage.getItem('api_token'), params).then(function (response) {
+	        _this.expenses.splice(_this.expenseItem.index, 1, item);
+	        _this.expenseItem.index = 0;
+	        _this.expenseItem.value = 0;
+	        _this.expenseItem.name = '';
+	        $('[data-modal-close="editExpense"]').click();
+	      }).catch(function (err) {
+	        console.log(err);
+	      });
 	    },
 	    addExpenseItem: function addExpenseItem() {
+	      var _this2 = this;
+
 	      var cat = this.categoryList;
 	      var ei = this.expenseItem;
 	      var index = _lodash2.default.findIndex(this.expenses, function (o) {
 	        return o.category == cat[ei.category];
 	      });
 	      if (index != -1) {
-	        var item = this.expenses[index];
-	        item.spent += this.expenseItem.value;
-	        this.expenses.splice(index, 1, item);
-	        this.expenseItem.value = 0;
-	        this.expenseItem.category = 0;
-	        var snackbar = document.querySelector('#toast');
-	        snackbar.MaterialSnackbar.showSnackbar({ message: "Expense Item added to budget." });
-	        $('[data-modal-close="addExpense"]').click();
+	        (function () {
+	          var item = _this2.expenses[index];
+	          item.spent += _this2.expenseItem.value;
+	          item.remaining = item.budgeted - item.spent;
+	          var params = { accountID: item.account_id, expenseID: item.id, spent: item.spent, remaining: item.remaining };
+	          _this2.$http.post('http://service.michaeldsmithjr.com/api/updateExpense?api_token=' + localStorage.getItem('api_token'), params).then(function (response) {
+	            _this2.expenses.splice(index, 1, item);
+	            _this2.expenseItem.value = 0;
+	            _this2.expenseItem.category = 0;
+	            var snackbar = document.querySelector('#toast');
+	            snackbar.MaterialSnackbar.showSnackbar({ message: "Expense Item added to budget." });
+	            $('[data-modal-close="addExpense"]').click();
+	          }).catch(function (err) {
+	            console.log(err);
+	          });
+	        })();
 	      }
 	    },
 	    addIncome: function addIncome() {
@@ -13110,7 +13142,7 @@
 	};
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global, module) {/**
@@ -30179,10 +30211,10 @@
 	  }
 	}.call(this));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(27)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(28)(module)))
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -30196,21 +30228,6 @@
 		return module;
 	}
 
-
-/***/ },
-/* 28 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	exports.default = {
-		accounts: {},
-		expenseItems: {},
-		incomeItems: {}
-	};
 
 /***/ },
 /* 29 */
@@ -30627,11 +30644,11 @@
 	    value: true
 	});
 
-	var _storage = __webpack_require__(28);
+	var _storage = __webpack_require__(21);
 
 	var _storage2 = _interopRequireDefault(_storage);
 
-	var _lodash = __webpack_require__(26);
+	var _lodash = __webpack_require__(27);
 
 	var _lodash2 = _interopRequireDefault(_lodash);
 
@@ -30653,12 +30670,12 @@
 	    methods: {
 	        addCategory: function addCategory() {
 	            var item = {};
+	            item.id = null;
 	            item.category = this.categoryList[this.addedCategory.index];
 	            item.budgeted = this.addedCategory.budgeted;
 	            item.spent = 0;
 	            item.remaining = item.budgeted;
 	            this.categories.push(item);
-	            _storage2.default.expenseItems[this.$route.params.accountID] = this.categories;
 	            $("[data-modal-close=addBudgetCategory]").click();
 	            var snackbar = document.querySelector('#toast');
 	            snackbar.MaterialSnackbar.showSnackbar({ message: "Expense Category added to budget." });
@@ -30670,10 +30687,19 @@
 	            });
 	            console.log(index);
 	            this.categories.splice(index, 1);
+	        },
+	        updateBudget: function updateBudget() {
+	            var params = { accountID: this.$route.params.accountID, budgetItems: this.categories };
+	            var vm = this;
+	            this.$http.post("http://service.michaeldsmithjr.com/api/updateBudget?api_token=" + localStorage.getItem('api_token'), params).then(function (response) {
+	                vm.$router.go(-1);
+	            }).catch(function (err) {
+	                console.log(err);
+	            });
 	        }
 	    },
 	    created: function created() {
-	        this.categories = _storage2.default.expenseItems[this.$route.params.accountID];
+	        this.categories = _storage2.default.accounts[this.$route.params.accountID].expense_items;
 	    },
 	    mounted: function mounted() {
 	        $('.modal').hide();
@@ -30710,13 +30736,25 @@
 	    }, [_vm._s(category.category)]), " ", _vm._h('td', [_vm._h('div', {
 	      staticClass: "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
 	    }, [_vm._h('input', {
+	      directives: [{
+	        name: "model",
+	        rawName: "v-model",
+	        value: (category.budgeted),
+	        expression: "category.budgeted"
+	      }],
 	      staticClass: "mdl-textfield__input",
 	      attrs: {
 	        "type": "number",
 	        "id": "value"
 	      },
 	      domProps: {
-	        "value": category.budgeted
+	        "value": _vm._s(category.budgeted)
+	      },
+	      on: {
+	        "input": function($event) {
+	          if ($event.target.composing) { return; }
+	          category.budgeted = _vm._n($event.target.value)
+	        }
 	      }
 	    })])]), " ", _vm._h('td', [_vm._h('i', {
 	      staticClass: "material-icons pointer",
@@ -30728,8 +30766,10 @@
 	    }, ["delete"])])])
 	  })])]), " ", _vm._h('button', {
 	    staticClass: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent padding-top",
-	    attrs: {
-	      "data-modal-open": "addExpense"
+	    on: {
+	      "click": function($event) {
+	        _vm.updateBudget()
+	      }
 	    }
 	  }, ["\n        Save Changes\n    "]), " ", _vm._h('div', {
 	    staticClass: "modal",
@@ -31051,11 +31091,11 @@
 	    value: true
 	});
 
-	var _lodash = __webpack_require__(26);
+	var _lodash = __webpack_require__(27);
 
 	var _lodash2 = _interopRequireDefault(_lodash);
 
-	var _storage = __webpack_require__(28);
+	var _storage = __webpack_require__(21);
 
 	var _storage2 = _interopRequireDefault(_storage);
 
@@ -31097,7 +31137,7 @@
 	            this.categories.splice(index, 1);
 	        },
 	        saveBudget: function saveBudget() {
-	            var params = { accountID: this.$route.params.accountID, expenseItems: this.categories };
+	            var params = { accountID: this.$route.query.id, expenseItems: this.categories };
 	            var vm = this;
 	            this.$http.post('http://service.michaeldsmithjr.com/api/createBudget?api_token=' + localStorage.getItem('api_token'), params).then(function (response) {
 	                _storage2.default.accounts[params.accountID].expense_items = response.body;

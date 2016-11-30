@@ -94,7 +94,7 @@
 	    		this.categories.splice(index, 1);
             },
             saveBudget(){
-                let params = {accountID: this.$route.params.accountID, expenseItems: this.categories}
+                let params = {accountID: this.$route.query.id, expenseItems: this.categories}
                 let vm = this;
                 this.$http.post('http://service.michaeldsmithjr.com/api/createBudget?api_token=' + localStorage.getItem('api_token'), params).then((response)=>{
                     store.accounts[params.accountID].expense_items = response.body;
