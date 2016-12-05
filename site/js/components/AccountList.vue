@@ -5,12 +5,14 @@
             <tr>
               <th class="mdl-data-table__cell--non-numeric">Account Name</th>
               <th>Current Projected Balance</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="account in accountList">
               <td class="mdl-data-table__cell--non-numeric"><router-link :to="{ name: 'accounts', params: { accountID: account.id }}">{{ account.name }}</router-link></td>
               <td>{{ account.balance }}</td>
+              <td><i class="material-icons pointer" v-on:click="deleteAccount(account.id)">delete</i></td>
             </tr>
           </tbody>
         </table>
@@ -31,17 +33,21 @@
                            v-model="account.balance">
                     <label class="mdl-textfield__label" for="addBalance">Current Account Balance</label>
                 </div>
-                <button v-on:click.prevent="saveAccount()"
-                        class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                    <button v-on:click.prevent="saveAccount()"
+                                     class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
                     Save
                 </button>
             </div>
         </div>
+        <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored fab" v-on:click="addAccount()">
+            <i class="material-icons">add</i>
+        </button>
     </div>
 </template>
 
 <script>
     import store from '../storage';
+    import Vue from 'vue';
 	 export default {
 	    data() {
 	      return {
@@ -55,7 +61,7 @@
 	    methods: {
 	        saveAccount(){
 	            let vm = this;
-	            this.$http.post("http://service.michaeldsmithjr.com/api/createAccount?api_token=" + localStorage.getItem('api_token'), this.account).then((response)=>{
+	            this.$http.post("https://service.michaeldsmithjr.com/api/createAccount?api_token=" + localStorage.getItem('api_token'), this.account).then((response)=>{
 	                 console.log(response);
 	                 let account = {id: response.body.id, name: response.body.name, balance: response.body.balance};
 	                 store.accounts[account.id] = account;
@@ -65,7 +71,27 @@
 	                console.log(err);
 	            });
 
-	        }
+	        },
+	        deleteAccount(id){
+	            let vm = this;
+	            let params = {accountID: id};
+	            this.$http.post("https://service.michaeldsmithjr.com/api/deleteAccount?api_token=" + localStorage.getItem('api_token'), params).then((response)=>{
+	                if(response.ok){
+	                    Vue.delete(vm.accountList, params.accountID);
+	                    var snackbar = document.querySelector('#toast');
+						snackbar.MaterialSnackbar.showSnackbar({message: "Account successfully deleted"});
+	                }
+	            }).catch((err)=>{
+	                console.log(err);
+	            });
+	        },
+	        addAccount(){
+	            var modal = $("[data-modal=addAccount]");
+				var modalContent = modal.find(".modal-content");
+				modalContent.css("top", "0");
+				modal.show();
+				modalContent.animate({top: '35%'}, 300);
+			}
 	    },
 	    created(){
 	    	//this.accountList = [{id: 1, name: "Checking", balance: 1500.00}]
@@ -82,15 +108,6 @@
 					modal.hide();
 				});
 			});
-			$("#rightIcon").off();
-			$("#rightIcon").click(function(){
-                var modal = $("[data-modal=addAccount]");
-				var modalContent = modal.find(".modal-content");
-				modalContent.css("top", "0");
-				modal.show();
-				modalContent.animate({top: '35%'}, 300);
-			});
-			$("#rightIcon").show();
 	    }
 	}
 </script>

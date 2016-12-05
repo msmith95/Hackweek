@@ -18,7 +18,7 @@
                     </div>
                 </td>
                 <td>
-                    <i class="material-icons pointer" v-on:click="deleteItem(item.id)">delete</i>
+                    <i class="material-icons pointer" v-on:click="deleteItem(category.id)">delete</i>
                 </td>
             </tr>
             </tbody>
@@ -51,6 +51,9 @@
                 </button>
             </div>
         </div>
+        <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored fab" v-on:click="addBudgetCategory()">
+            <i class="material-icons">add</i>
+        </button>
     </div>
 </template>
 <style>
@@ -90,17 +93,34 @@
             },
             deleteItem(id){
                 var index = _.findIndex(this.categories, function(o) { return o.id == id; });
-	    		console.log(index);
-	    		this.categories.splice(index, 1);
+                let params = {accountID: this.$route.params.accountID, expenseID: id};
+                this.$http.post("https://service.michaeldsmithjr.com/api/deleteBudgetItem?api_token=" + localStorage.getItem('api_token'), params).then((response)=>{
+                    if(response.ok){
+                        console.log(index);
+	    		        this.categories.splice(index, 1);
+	    		        var snackbar = document.querySelector('#toast');
+                        snackbar.MaterialSnackbar.showSnackbar({message: "Expense Category successfully deleted"});
+                    }
+                }).catch((err)=>{
+                    console.log(err);
+                });
+
             },
             updateBudget(){
                 let params = {accountID: this.$route.params.accountID, budgetItems: this.categories};
                 let vm = this;
-                this.$http.post("http://service.michaeldsmithjr.com/api/updateBudget?api_token=" + localStorage.getItem('api_token'), params).then((response)=>{
+                this.$http.post("https://service.michaeldsmithjr.com/api/updateBudget?api_token=" + localStorage.getItem('api_token'), params).then((response)=>{
                     vm.$router.go(-1);
                 }).catch((err)=>{
                     console.log(err);
                 });
+            },
+            addBudgetCategory(){
+                var modal = $("[data-modal=addBudgetCategory]");
+				var modalContent = modal.find(".modal-content");
+				modalContent.css("top", "0");
+				modal.show();
+				modalContent.animate({top: '35%'}, 300);
             }
         },
         created(){
@@ -116,15 +136,6 @@
 					modal.hide();
 				});
 			});
-			$("#rightIcon").off();
-			$("#rightIcon").click(function(){
-                var modal = $("[data-modal=addBudgetCategory]");
-				var modalContent = modal.find(".modal-content");
-				modalContent.css("top", "0");
-				modal.show();
-				modalContent.animate({top: '35%'}, 300);
-			});
-			$("#rightIcon").show();
 	    }
     }
 </script>

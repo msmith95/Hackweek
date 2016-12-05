@@ -5,7 +5,12 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://code.getmdl.io/1.2.1/material.blue_grey-light_blue.min.css"/>
     <link rel="stylesheet" href="css/style.css">
-
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script>
+		google.charts.load('current', {'packages':['corechart']});
+    </script>
+    <script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
+    <script src="https://code.getmdl.io/1.2.1/material.min.js"></script>
 </head>
 <body>
 <div class="mdl-layout mdl-js-layout" id='app'>
@@ -15,7 +20,6 @@
             <div class="mdl-layout__header-row">
                 <i class="material-icons hiddenBackButton pointer" v-on:click="goBack()" id="backButton">arrow_back</i>
                 <div class="mdl-layout-spacer"></div>
-                <i class="material-icons pointer hiddenBackButton" id="createIcon">create</i>
                 <i class="material-icons pointer hiddenBackButton" id="rightIcon">add</i>
             </div>
         </header>
@@ -30,6 +34,7 @@
                 </router-link>
                 <router-link to="/accounts" v-if="user.authenticated" class="mdl-navigation__link">Account List
                 </router-link>
+                <a v-on:click="logout()" v-if="user.authenticated" class="mdl-navigation__link">Logout</a>
             </nav>
         </div>
         <main class="mdl-layout__content">
@@ -44,8 +49,6 @@
         </main>
     </div>
 </div>
-<script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
-<script src="https://code.getmdl.io/1.2.1/material.min.js"></script>
 <script type="text/javascript" src="js/bundle.js"></script>
 </body>
 </html>

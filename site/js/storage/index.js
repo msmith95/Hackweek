@@ -4,6 +4,8 @@
 
 export default {
 	accounts: {},
-	expenseItems: {},
-	incomeItems: {}
+	expenseItemsSum: {},
+	incomeItemsSum: {},
+	totalExpense: 0,
+	totalIncome: 0
 }

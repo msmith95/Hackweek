@@ -24,6 +24,8 @@ class ApiAuthenticationController extends Controller
     public function login(Request $request){
         if(Auth::attempt(['email' => $request->input('email'), 'password' => $request->input('password')])){
             return Auth::user();
+        }else{
+            return response('', 404);
         }
     }
 }

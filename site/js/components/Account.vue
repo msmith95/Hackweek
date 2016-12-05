@@ -6,9 +6,20 @@
 				<router-link class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" :to="{ name: 'editBudget', params: { accountID: this.$route.params.accountID }}" tag="button">Edit Budget</router-link>
 			</div>
 		</div>
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--4-col" id="accountExpensesVsIncome">
+
+            </div>
+            <div class="mdl-cell mdl-cell--4-col" id="accountExpenses">
+
+            </div>
+            <div class="mdl-cell mdl-cell--4-col" id="accountIncome">
+
+            </div>
+        </div>
 		<div class="mdl-grid">
 			<div class="mdl-cell mdl-cell--4-col">
-				pie chart
+
 			</div>
 			<div class="mdl-cell mdl-cell--4-col">
 				<h4>Expenses:</h4>
@@ -138,7 +149,7 @@
 	</div>
 </template>
 
-<script>
+<script type="text/javascript">
 	import _ from 'lodash';
 	import store from '../storage';
 	export default {
@@ -158,14 +169,26 @@
 	      	},
 	      	categoryList: [
 	      		"Groceries", "Gas", "Out to Eat", "Food"
-	      	]
+	      	],
+            totalIncome:0,
+            totalExpense:0
 	      }
 	    },
 	    methods: {
 	    	deleteIncome(id){
-	    		var index = _.findIndex(this.income, function(o) { return o.id == id; });
-	    		console.log(index);
-	    		this.income.splice(index, 1);
+	    		let index = _.findIndex(this.income, function(o) { return o.id == id; });
+	    		let params = {accountID: this.$route.params.accountID, incomeID: id};
+	    		this.$http.post("https://service.michaeldsmithjr.com/api/deleteIncomeItem?api_token=" + localStorage.getItem('api_token'), params).then((response)=>{
+	    		    console.log(index);
+	    		    this.totalIncome -= this.income[index].value;
+	    		    this.income.splice(index, 1);
+                    this.createAccountIncomeChart();
+                    this.createAccountExpenseVsIncomeChart();
+	    		    let snackbar = document.querySelector('#toast');
+					snackbar.MaterialSnackbar.showSnackbar({message: "Income successfully deleted"});
+	    		}).catch((err)=>{
+	    		    console.log(err);
+	    		});
 	    	},
 	    	editExpense(id){
 				let index = _.findIndex(this.expenses, function(o) { return o.id == id; });
@@ -184,11 +207,16 @@
 	    		item.spent = this.expenseItem.value;
 	    		item.remaining = item.budgeted - item.spent;
 	    		let params = {accountID: item.account_id, expenseID: item.id, spent: item.spent, remaining: item.remaining};
-	    		this.$http.post('http://service.michaeldsmithjr.com/api/updateExpense?api_token=' + localStorage.getItem('api_token'), params).then((response)=>{
-	    			this.expenses.splice(this.expenseItem.index, 1, item);
+	    		this.$http.post('https://service.michaeldsmithjr.com/api/updateExpense?api_token=' + localStorage.getItem('api_token'), params).then((response)=>{
+                    this.totalExpense -= this.expenses[this.expenseItem.index].spent;
+                    this.totalExpense += item.spent;
+                    this.expenses.splice(this.expenseItem.index, 1, item);
+                    this.createAccountExpenseChart();
+                    this.createAccountExpenseVsIncomeChart();
 					this.expenseItem.index = 0;
 					this.expenseItem.value = 0;
 					this.expenseItem.name = '';
+
 					$('[data-modal-close="editExpense"]').click();
 	    		}).catch((err)=>{
 	    			console.log(err);
@@ -203,11 +231,14 @@
 	    			item.spent += this.expenseItem.value;
 	    			item.remaining = item.budgeted - item.spent;
 	    			let params = {accountID: item.account_id, expenseID: item.id, spent: item.spent, remaining: item.remaining};
-	    			this.$http.post('http://service.michaeldsmithjr.com/api/updateExpense?api_token=' + localStorage.getItem('api_token'), params).then((response)=>{
+	    			this.$http.post('https://service.michaeldsmithjr.com/api/updateExpense?api_token=' + localStorage.getItem('api_token'), params).then((response)=>{
+                        this.totalExpense += item.spent;
 	    				this.expenses.splice(index, 1, item);
+	    				this.createAccountExpenseChart();
+	    				this.createAccountExpenseVsIncomeChart();
 						this.expenseItem.value = 0;
 						this.expenseItem.category = 0;
-						var snackbar = document.querySelector('#toast');
+						let snackbar = document.querySelector('#toast');
 						snackbar.MaterialSnackbar.showSnackbar({message: "Expense Item added to budget."});
 						$('[data-modal-close="addExpense"]').click();
 	    			}).catch((err)=>{
@@ -218,43 +249,75 @@
 	    	addIncome(){
 	    		let item = {};
 	    		item.name = this.incomeItem.name;
-	    		item.value = this.incomeItem.value;
+	    		item.income = this.incomeItem.value;
 	    		let params = {accountID: this.$route.params.accountID, incomeName: item.name, incomeValue: item.value}
-	    		this.$http.post("http://service.michaeldsmithjr.com/api/createIncomeItem?api_token=" + localStorage.getItem('api_token'), params).then((response)=>{
+	    		this.$http.post("https://service.michaeldsmithjr.com/api/createIncomeItem?api_token=" + localStorage.getItem('api_token'), params).then((response)=>{
+	    			this.totalIncome += item.income;
 	    			this.incomeItem.name = '';
 					this.incomeItem.value = 0;
 					this.income.push(item);
+                    this.createAccountIncomeChart();
+                    this.createAccountExpenseVsIncomeChart();
 					$('[data-modal-close="addIncome"]').click();
 	    		}).catch((err)=>{
 	    			console.log(err);
 	    		});
-	    	}
+	    	},
+            createAccountExpenseChart(){
+                let expenseData = new google.visualization.DataTable();
+                expenseData.addColumn('string', 'Category');
+                expenseData.addColumn('number', 'Spent');
+                let vm = this;
+                _.forEach(this.expenses, function(value){
+                    expenseData.addRow([value.category, value.spent]);
+                    vm.totalExpense += value.spent;
+                });
+                let options = {'title':'Breakdown of expenses by category',
+                    'width':400,
+                    'height':300};
+                let totalExpenses = new google.visualization.PieChart(document.getElementById('accountExpenses'));
+                totalExpenses.draw(expenseData, options);
+            },
+            createAccountIncomeChart(){
+                let incomeData = new google.visualization.DataTable();
+                incomeData.addColumn('string', 'Source');
+                incomeData.addColumn('number', 'Amount');
+                let vm = this;
+                _.forEach(this.income, function(value){
+                    incomeData.addRow([value.name, value.income]);
+                    vm.totalIncome += value.income;
+                });
+                let options = {'title': 'Breakdown of income by source',
+                    'width': 400,
+                    'height': 300};
+                let totalIncome = new google.visualization.PieChart(document.getElementById('accountIncome'));
+                totalIncome.draw(incomeData, options);
+            },
+            createAccountExpenseVsIncomeChart(){
+                let data = new google.visualization.DataTable();
+                data.addColumn('string', 'Type');
+                data.addColumn('number', 'Amount');
+                data.addRows([
+                    ['Expenses', this.totalExpense],
+                    ['Income', this.totalIncome]
+                ]);
+                let options = {'title': "Expenses vs Income",
+                    'width': 400,
+                    'income': 300};
+                let chart = new google.visualization.PieChart(document.getElementById('accountExpensesVsIncome'));
+                chart.draw(data, options);
+            }
 	    },
 	    created(){
 	    	this.income = store.accounts[this.$route.params.accountID].income_items;
 	    	this.expenses = store.accounts[this.$route.params.accountID].expense_items;
-			//this.income = [{id: 1, name: "Checking", value: 150.00}];
-	    	//this.expenses = [{id: 1, name: "Checking", category: "Food", budgeted: 150.00, spent: 75.00, remaining: 75.00}];
-
-			/*if(!store.accounts[vm.$route.params.accountID]){
-				$("#loadingSpinner").addClass("is-active");
-				$("#loadingSpinner").show();
-				this.$http.get("https://jsonplaceholder.typicode.com/posts/1").then((response)=>{
-					console.log("Fetch completed");
-					$("#loadingSpinner").removeClass("is-active");
-					$("#loadingSpinner").hide();
-					store.accounts[vm.$route.params.accountID] = true;
-					store.expenseItems[vm.$route.params.accountID] = this.expenses;
-					store.incomeItems[vm.$route.params.accountID] = this.income;
-				})
-			}*/
 			console.log(store);
 	    },
 	    mounted(){
-	    	$("#rightIcon").hide();
+            this.createAccountExpenseChart();
+            this.createAccountIncomeChart();
+            this.createAccountExpenseVsIncomeChart();
 	    	$('.modal').hide();
-	    	$("#createIcon").off();
-	    	$("#createIcon").click()
 			$("[data-modal-open]").click(function (){
 				var modalID = $(this).attr("data-modal-open");
 				var modal = $("[data-modal="+modalID+"]");

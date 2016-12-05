@@ -46,8 +46,7 @@ class IncomeItemController extends Controller
      * @param $account
      * @param $incomeID
      */
-    private function findIncomeItemById($account, $incomeID):void
-    {
+    private function findIncomeItemById($account, $incomeID){
         $incomeItem = $account->incomeItems->first(function ($value, $key) use ($incomeID) {
             return $value->id == $incomeID;
         });

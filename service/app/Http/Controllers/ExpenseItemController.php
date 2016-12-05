@@ -73,7 +73,7 @@ class ExpenseItemController extends Controller
     }
 
     public function deleteBudgetItem(Request $request){
-        $accountID = $request->user('accountID');
+        $accountID = $request->input('accountID');
         $user = $request->user();
         $account = Account::findAccountById($user, $accountID);
         $expenseID = $request->input('expenseID');

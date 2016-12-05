@@ -51,6 +51,9 @@
                 </button>
             </div>
         </div>
+        <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored fab" v-on:click="addCategory()">
+            <i class="material-icons">add</i>
+        </button>
     </div>
 </template>
 <style>
@@ -96,12 +99,19 @@
             saveBudget(){
                 let params = {accountID: this.$route.query.id, expenseItems: this.categories}
                 let vm = this;
-                this.$http.post('http://service.michaeldsmithjr.com/api/createBudget?api_token=' + localStorage.getItem('api_token'), params).then((response)=>{
+                this.$http.post('https://service.michaeldsmithjr.com/api/createBudget?api_token=' + localStorage.getItem('api_token'), params).then((response)=>{
                     store.accounts[params.accountID].expense_items = response.body;
                     vm.$router.push('/accounts/' + params.accountID)
                 }).catch((err)=>{
                     console.log(err);
                 });
+            },
+            addCategory(){
+                var modal = $("[data-modal=addBudgetCategory]");
+				var modalContent = modal.find(".modal-content");
+				modalContent.css("top", "0");
+				modal.show();
+				modalContent.animate({top: '35%'}, 300);
             }
         },
 	    mounted(){
@@ -116,11 +126,7 @@
 			});
 			$("#rightIcon").off();
 			$("#rightIcon").click(function(){
-                var modal = $("[data-modal=addBudgetCategory]");
-				var modalContent = modal.find(".modal-content");
-				modalContent.css("top", "0");
-				modal.show();
-				modalContent.animate({top: '35%'}, 300);
+
 			});
 			$("#rightIcon").show();
 	    }
