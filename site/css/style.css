@@ -46,3 +46,9 @@ html,body{
 	margin-right: 15px;
 	margin-left: 0;
 }
+
+.hiddenError{
+	display:none;
+	padding-top: 10px;
+	margin-bottom: 0px;
+}

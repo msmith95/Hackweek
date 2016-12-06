@@ -4,6 +4,10 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+/**
+ * Class CreateIncomeItemTable
+ * Calls the migration to create the income item table
+ */
 class CreateIncomeItemTable extends Migration
 {
     /**

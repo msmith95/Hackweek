@@ -45,7 +45,7 @@
     </div>
 </template>
 
-<script>
+<script type="text/javascript">
     import store from '../storage';
     import Vue from 'vue';
 	 export default {
@@ -59,6 +59,10 @@
 	      }
 	    },
 	    methods: {
+            /**
+             * Saves a new account by making the request to the service, handling any errors,
+             * and updating the UI
+             */
 	        saveAccount(){
 	            let vm = this;
 	            this.$http.post("https://service.michaeldsmithjr.com/api/createAccount?api_token=" + localStorage.getItem('api_token'), this.account).then((response)=>{
@@ -72,6 +76,11 @@
 	            });
 
 	        },
+            /**
+             * Deletes an account by making the request to the service, handling any errors,
+             * and updating the UI
+             * @param id - ID of account to be deleted
+             */
 	        deleteAccount(id){
 	            let vm = this;
 	            let params = {accountID: id};
@@ -85,6 +94,9 @@
 	                console.log(err);
 	            });
 	        },
+            /**
+             * Shows the modal to add an account
+             */
 	        addAccount(){
 	            var modal = $("[data-modal=addAccount]");
 				var modalContent = modal.find(".modal-content");
@@ -93,11 +105,16 @@
 				modalContent.animate({top: '35%'}, 300);
 			}
 	    },
-	    created(){
-	    	//this.accountList = [{id: 1, name: "Checking", balance: 1500.00}]
-	    	this.accountList = store.accounts;
-	    },
+         /**
+          * Performs a redirect if the state store is not loaded and
+          * hides all modals and shows the back button
+          */
 	    mounted(){
+	        this.accountList = store.accounts;
+	        if(!store.loaded){
+	            this.$router.push('/');
+	            return;
+	        }
 			$("#backButton").show();
 			$('.modal').hide();
 			$("[data-modal-close]").click(function (){

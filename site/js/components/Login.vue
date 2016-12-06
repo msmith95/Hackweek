@@ -1,20 +1,23 @@
 <template>
-	<div class="mdl-shadow--2dp wide-form">
-		<form action="#">
-			<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-				<input class="mdl-textfield__input" type="text" id="email" v-model="credentials.email">
-				<label class="mdl-textfield__label" for="email">Email</label>
-			</div>
-		<br>
-			<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-				<input class="mdl-textfield__input" type="password" id="password" v-model="credentials.password">
-				<label class="mdl-textfield__label" for="password">Password</label>
-			</div>
-		<br>
-			<button v-on:click.prevent="submit()" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
-			Login
-			</button>
-		</form>
+	<div>
+		<div class="mdl-shadow--2dp wide-form">
+			<form action="#">
+                <p class="hiddenError">Invalid username or password</p>
+				<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+					<input class="mdl-textfield__input" type="text" id="email" v-model="credentials.email">
+					<label class="mdl-textfield__label" for="email">Email</label>
+				</div>
+			<br>
+				<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+					<input class="mdl-textfield__input" type="password" id="password" v-model="credentials.password">
+					<label class="mdl-textfield__label" for="password">Password</label>
+				</div>
+			<br>
+				<button v-on:click.prevent="submit()" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+				Login
+				</button>
+			</form>
+		</div>
 	</div>
 </template>
 
@@ -29,13 +32,11 @@
 	}
 </style>
 
-<script>
+<script type="text/javascript">
 	import auth from '../auth';
 	  export default {
 	    data() {
 	      return {
-	        // We need to initialize the component with any
-	        // properties that will be used in it
 	        credentials: {
 	          email: '',
 	          password: ''
@@ -44,15 +45,16 @@
 	      }
 	    },
 	    methods: {
+            /**
+             * Submits the login request using the auth provider
+             */
 	      submit() {
 	        var credentials = {
 	          email: this.credentials.email,
 	          password: this.credentials.password
 	        }
-	        // We need to pass the component's this context
-	        // to properly make use of http in the auth service
-	        auth.login(this, credentials, 'secretquote')
-	        //auth.user.authenticated = true;
+	        $(".hiddenError").hide();
+	        auth.login(this, credentials)
 
 	      }
 	    },

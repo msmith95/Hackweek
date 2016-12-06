@@ -45,7 +45,7 @@
                            v-model="addedCategory.budgeted">
                     <label class="mdl-textfield__label" for="addBudget">Amount you want to budget?</label>
                 </div>
-                <button v-on:click.prevent="addCategory()"
+                <button v-on:click.prevent="saveAddedCategory()"
                         class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
                     Save
                 </button>
@@ -59,7 +59,7 @@
 <style>
 
 </style>
-<script>
+<script type="text/javascript">
     import _ from 'lodash';
     import store from '../storage';
     export default{
@@ -67,7 +67,7 @@
             return{
                 categories: [],
                 categoryList: [
-	      		    "Groceries", "Gas", "Out to Eat", "Food"
+	      		    "Groceries", "Gas", "Out to Eat", "Food", "Insurance", "Car", "House", "Other Loans", "Utilities", "Other"
 	      	    ],
 	      	    addedCategory: {
 	      	        name: '',
@@ -77,9 +77,35 @@
             }
         },
         methods: {
-            addCategory(){
+            /**
+             * Saves the new category to the category array and updates the data fields
+             * Also disallows repeat categories
+             */
+            saveAddedCategory(){
+                let category = this.categoryList[this.addedCategory.index]
+                let index = _.findIndex(this.categories, function(o){ return o.category == category});
+                if(index != -1){
+                    this.addedCategory.name = '';
+                    this.addedCategory.index = 0;
+                    this.addedCategory.budgeted = 0;
+                    $("[data-modal-close=addBudgetCategory]").click();
+                    var snackbar = document.querySelector('#toast');
+                    snackbar.MaterialSnackbar.showSnackbar({message: "Expense categories can only added for categories you don't have"});
+                    return;
+                }else{
+                    index = _.findIndex(this.tempCategories, function(o){return o.category == category});
+                    if(index != -1){
+                        this.addedCategory.name = '';
+                        this.addedCategory.index = 0;
+                        this.addedCategory.budgeted = 0;
+                        $("[data-modal-close=addBudgetCategory]").click();
+                        var snackbar = document.querySelector('#toast');
+                        snackbar.MaterialSnackbar.showSnackbar({message: "Expense categories can only added for categories you don't have"});
+                        return;
+                    }
+                }
                 let item = {};
-                item.category = this.categoryList[this.addedCategory.index];
+                item.category = category;
                 item.budgeted = this.addedCategory.budgeted;
                 item.spent = 0;
                 item.remaining = item.budgeted;
@@ -91,11 +117,18 @@
                 snackbar.MaterialSnackbar.showSnackbar({message: "Expense Category added to budget."});
                 $('[data-modal-close="addExpense"]').click();
             },
+            /**
+             * Deletes a budget item and removes it from the arrays
+             * @param id
+             */
             deleteItem(id){
                 var index = _.findIndex(this.categories, function(o) { return o.id == id; });
 	    		console.log(index);
 	    		this.categories.splice(index, 1);
             },
+            /**
+             * Makes a request to the service to save all fo the budget categories added
+             */
             saveBudget(){
                 let params = {accountID: this.$route.query.id, expenseItems: this.categories}
                 let vm = this;
@@ -106,6 +139,9 @@
                     console.log(err);
                 });
             },
+            /**
+             * Shows the modal to add a category
+             */
             addCategory(){
                 var modal = $("[data-modal=addBudgetCategory]");
 				var modalContent = modal.find(".modal-content");
@@ -114,6 +150,9 @@
 				modalContent.animate({top: '35%'}, 300);
             }
         },
+        /**
+         * Hides the modals and sets up the click handlers for them
+         */
 	    mounted(){
 	        $('.modal').hide();
 			$("[data-modal-close]").click(function (){

@@ -11,18 +11,18 @@ import Dashboard from './components/Dashboard.vue';
 import CreateBudget from './components/CreateBudget.vue';
 import store from './storage/index.js';
 import _ from 'lodash';
-//import {router} from './router.js';
 
 auth.checkAuth();
 
 Vue.use(VueRouter);
 Vue.use(VueResource);
 
-
-
+/**
+ * Gets the user information if the user is authenticated when they first visit
+ */
 if(auth.user.authenticated){
 	Vue.http.get('https://service.michaeldsmithjr.com/api/user?api_token=' + localStorage.getItem('api_token')).then((response)=>{
-		console.log(response);
+		//console.log(response);
 		_.forEach(response.body.accounts, function(value){
 			store.accounts[value.id] = value;
 			_.forEach(value.expense_items, function(expenseItem){
@@ -35,11 +35,12 @@ if(auth.user.authenticated){
 				}
 			});
 			_.forEach(value.income_items, function(incomeItem){
-				store.incomeItemsSum[incomeItem.name] = incomeItem.value;
-				store.totalIncome += incomeItem.value;
+				store.incomeItemsSum[incomeItem.name] = incomeItem.income;
+				store.totalIncome += incomeItem.income;
 			});
 		});
-		console.log(store);
+		//console.log(store);
+		store.loaded = true;
 	}).catch((err)=>{
 
 	});
@@ -51,6 +52,12 @@ const Home = { template: '<div><h2>Home</h2><p>Money Manager is an application c
 'where you might possibly be able to save money. Lastly it allows you to create a budget for yourself and see just how closly you' +
 ' follow it.</p></div>' };
 
+/**
+ * Defines a guard to redirect users if they are authenticated on an non-auth protected route
+ * @param to
+ * @param from
+ * @param next
+ */
 let loggedInGuard = (to, from, next)=>{
 	if(auth.user.authenticated){
 		next('/dashboard');
@@ -59,6 +66,12 @@ let loggedInGuard = (to, from, next)=>{
 	}
 };
 
+/**
+ * Defines a guard to redirect users if not authenticated
+ * @param to
+ * @param from
+ * @param next
+ */
 let authGuard = (to, from, next)=>{
 	if(!auth.user.authenticated){
 		next('/');
@@ -67,11 +80,15 @@ let authGuard = (to, from, next)=>{
 	}
 };
 
+/**
+ * Creates the Vue Router which handles all navigation within the application
+ * @type {vuejs.Router<RootVueApp>}
+ */
 export let router = new VueRouter({
-  mode: 'history',
+
   base: __dirname,
   routes :[
-    { path: '/', component: Home, beforeEnter: loggedInGuard },
+    { path: '/', component: Home},
     { path: '/login', component: Login, beforeEnter: loggedInGuard},
     { path: '/register', component: Register, beforeEnter: loggedInGuard},
     { path: '/accounts', component: AccountList, beforeEnter: authGuard},
@@ -82,11 +99,10 @@ export let router = new VueRouter({
   ]
 });
 
-// router.routes = [
-//     { path: '/', component: Home },
-//     { path: '/login', component: Login}
-//   ];
-
+/**
+ * Defines the root Vue js instance
+ * @type {vuejs.Vue}
+ */
 const app = new Vue({
   router:router,
   el: '#app',

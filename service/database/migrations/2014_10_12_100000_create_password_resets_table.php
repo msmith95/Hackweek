@@ -4,6 +4,10 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+/**
+ * Class CreatePasswordResetsTable
+ * Calls the migration to add the password reset table
+ */
 class CreatePasswordResetsTable extends Migration
 {
     /**

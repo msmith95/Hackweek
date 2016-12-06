@@ -1,6 +1,7 @@
 <template>
 	<div class="mdl-shadow--2dp wide-form">
 		<form action="#">
+            <p class="hiddenError" id="message"></p>
 			<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
 				<input class="mdl-textfield__input" type="text" id="email" v-model="credentials.email">
 				<label class="mdl-textfield__label" for="email">Email</label>
@@ -34,13 +35,11 @@
 	}
 </style>
 
-<script>
+<script type="text/javascript">
 	import auth from '../auth';
 	  export default {
 	    data() {
 	      return {
-	        // We need to initialize the component with any
-	        // properties that will be used in it
 	        credentials: {
 	          email: '',
 	          password: '',
@@ -50,17 +49,18 @@
 	      }
 	    },
 	    methods: {
+            /**
+             * Submits the register request with the auth provider
+             */
 	      submit() {
-	        var credentials = {
+	      	$(".hiddenError").hide();
+	      	$("#message").empty();
+	        let credentials = {
 	          email: this.credentials.email,
 	          password: this.credentials.password,
 	          password_confirmation: this.credentials.password_confirmation
 	        }
-	        // We need to pass the component's this context
-	        // to properly make use of http in the auth service
-	        auth.signup(this, credentials, 'secretquote')
-	       // auth.user.authenticated = true;
-
+            auth.signup(this, credentials)
 	      }
 	    },
 	}

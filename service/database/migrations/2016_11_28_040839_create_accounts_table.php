@@ -4,6 +4,10 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+/**
+ * Class CreateAccountsTable
+ * Calls the migration to create the Accounts table
+ */
 class CreateAccountsTable extends Migration
 {
     /**

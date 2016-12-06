@@ -32,7 +32,11 @@
 
         },
         methods: {
+            /**
+             * Draws the expense chart using Google charts
+             */
         	createExpenseChart(){
+        		console.log(google);
                 let expenseData = new google.visualization.DataTable();
                 expenseData.addColumn('string', 'Category');
                 expenseData.addColumn('number', 'Spent');
@@ -45,6 +49,9 @@
                 let totalExpenses = new google.visualization.PieChart(document.getElementById('totalExpenses'));
                 totalExpenses.draw(expenseData, options);
             },
+            /**
+             * Draws the income chart using Google charts
+             */
             createIncomeChart(){
         		let incomeData = new google.visualization.DataTable();
         		incomeData.addColumn('string', 'Source');
@@ -58,6 +65,9 @@
         		let totalIncome = new google.visualization.PieChart(document.getElementById('totalIncome'));
         		totalIncome.draw(incomeData, options);
             },
+            /**
+             * Draws the income vs expense chart using Google charts
+             */
             createIncomeExpenseChart(){
             	let data = new google.visualization.DataTable();
             	data.addColumn('string', 'Type');
@@ -73,12 +83,17 @@
                 chart.draw(data, options);
             }
         },
+        /**
+         * Shows the loading spinner while loading the google charts library.
+         * Calls the functions to create the charts once the library is loaded
+         */
         mounted(){
         	if(!google.visualization){
         		let spinner = $("#loadingSpinner");
         		spinner.addClass("is-active");
         		spinner.show();
         		let vm = this;
+                google.charts.load('current', {'packages':['corechart']});
         		google.charts.setOnLoadCallback(function(){
                     spinner.hide();
                     spinner.removeClass("is-active");

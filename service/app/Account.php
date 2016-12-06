@@ -19,6 +19,12 @@ class Account extends Model
         return $this->hasMany('App\IncomeItem');
     }
 
+    /**
+     * Find the requested account by searching through the user's accounts
+     * @param $user - User who's accounts are being search through
+     * @param $id - ID of the account to find
+     * @return mixed
+     */
     static public function findAccountById($user, $id){
         $account = $user->accounts->first(function ($value, $key) use ($id) {
             return $value->id == $id;

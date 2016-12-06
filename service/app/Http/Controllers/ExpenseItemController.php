@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 
 class ExpenseItemController extends Controller
 {
+    /**
+     * Creates all of the expense items sent from the site
+     * @param Request $request
+     * @return array
+     */
     public function createAll(Request $request){
         $user = $request->user();
         $id = $request->input('accountID');
@@ -24,6 +29,11 @@ class ExpenseItemController extends Controller
         return $array;
     }
 
+    /**
+     * Updates a specific expense items details
+     * @param Request $request
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
+     */
     public function updateExpenseItem(Request $request){
         $accountID =  $request->input('accountID');
         $expenseID = $request->input('expenseID');
@@ -40,6 +50,11 @@ class ExpenseItemController extends Controller
         }
     }
 
+    /**
+     * Updates the budget after the user has made changes to it
+     * @param Request $request
+     * @return array
+     */
     public function updateBudget(Request $request){
         $accountID = $request->input('accountID');
         $user = $request->user();
@@ -59,7 +74,11 @@ class ExpenseItemController extends Controller
         return array_values($newItems->toArray());
     }
 
-
+    /**
+     * Updates a specific budget item
+     * @param Request $request
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
+     */
     public function updateBudgetItem(Request $request){
         $accountID = $request->input('accountID');
         $user = $request->user();
@@ -72,6 +91,11 @@ class ExpenseItemController extends Controller
         return response('', 200);
     }
 
+    /**
+     * Deletes the requested budget item from the account
+     * @param Request $request
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
+     */
     public function deleteBudgetItem(Request $request){
         $accountID = $request->input('accountID');
         $user = $request->user();
@@ -86,6 +110,12 @@ class ExpenseItemController extends Controller
         return response('', 200);
     }
 
+    /**
+     * Finds an expense item by ID
+     * @param $account - Account to be searched
+     * @param $expenseID - ID of the expense item to find
+     * @return mixed
+     */
     private function findExpenseItemById($account, $expenseID){
         $expenseItem = $account->expenseItems->first(function ($value, $key) use ($expenseID) {
             return $value->id == $expenseID;
@@ -93,6 +123,11 @@ class ExpenseItemController extends Controller
         return $expenseItem;
     }
 
+    /**
+     * Returns expense items that have a non-null id
+     * @param $expenseItems
+     * @return mixed
+     */
     private function findCurrentExpenseItems($expenseItems){
         $currentItems = $expenseItems->filter(function ($value, $key) {
             return $value['id'] != null;
@@ -101,6 +136,7 @@ class ExpenseItemController extends Controller
     }
 
     /**
+     * Finds expense items that have a null id
      * @param $expenseItems
      */
     private function findNewExpenseItems($expenseItems){
@@ -112,6 +148,7 @@ class ExpenseItemController extends Controller
     }
 
     /**
+     * Updates the budget items with their new values and saves them in the database
      * @param $currentItems
      * @param $budgetItems
      */
@@ -125,6 +162,7 @@ class ExpenseItemController extends Controller
     }
 
     /**
+     * Creates new expense items from an array
      * @param $newItems
      */
     private function createNewExpenseItems($newItems){

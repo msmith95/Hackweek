@@ -1,13 +1,11 @@
-var path = require("path");
-var webpack = require("webpack");
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
-var HtmlWebpackPlugin = require('html-webpack-plugin');
-var CompressionPlugin = require('compression-webpack-plugin');
+let path = require("path");
+let webpack = require("webpack");
+let LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
 
 module.exports = {
   entry: './js/index.js',
   output: {
-    filename: 'bundle.js',
+    filename: 'bundle-prod.js',
     path: './js/'
   },
   resolve: {
@@ -30,6 +28,7 @@ module.exports = {
    },
 	plugins: [
 		// short-circuits all Vue.js warning code
+		new LodashModuleReplacementPlugin,
 		new webpack.DefinePlugin({
 			'process.env': {
 				NODE_ENV: '"production"'
@@ -39,17 +38,11 @@ module.exports = {
 		new webpack.optimize.UglifyJsPlugin({
 			compress: {
 				warnings: false
-			}
+			},
+			output: {comments: false}
 		}),
 		// optimize module ids by occurence count
 		new webpack.optimize.OccurenceOrderPlugin(),
 		new webpack.optimize.DedupePlugin(),
-		new CompressionPlugin({
-			asset: "[path].gz[query]",
-			algorithm: "gzip",
-			test: /\.js$|\.html$/,
-			threshold: 10240,
-			minRatio: 0.8
-		})
 	]
 };

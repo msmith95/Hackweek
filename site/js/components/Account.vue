@@ -168,19 +168,23 @@
 	      		index: 0
 	      	},
 	      	categoryList: [
-	      		"Groceries", "Gas", "Out to Eat", "Food"
+	      		"Groceries", "Gas", "Out to Eat", "Food", "Insurance", "Car", "House", "Other Loans", "Utilities", "Other"
 	      	],
             totalIncome:0,
             totalExpense:0
 	      }
 	    },
 	    methods: {
+            /**
+             * Sends a request to the service to delete the income item and then removes it from the UI
+             * @param id - ID of the item to remove
+             */
 	    	deleteIncome(id){
 	    		let index = _.findIndex(this.income, function(o) { return o.id == id; });
 	    		let params = {accountID: this.$route.params.accountID, incomeID: id};
 	    		this.$http.post("https://service.michaeldsmithjr.com/api/deleteIncomeItem?api_token=" + localStorage.getItem('api_token'), params).then((response)=>{
 	    		    console.log(index);
-	    		    this.totalIncome -= this.income[index].value;
+	    		    //this.totalIncome -= this.income[index].value;
 	    		    this.income.splice(index, 1);
                     this.createAccountIncomeChart();
                     this.createAccountExpenseVsIncomeChart();
@@ -190,6 +194,10 @@
 	    		    console.log(err);
 	    		});
 	    	},
+            /**
+             * Shows the modal to edit an expense item
+             * @param id - ID of the expense item to edit
+             */
 	    	editExpense(id){
 				let index = _.findIndex(this.expenses, function(o) { return o.id == id; });
 				let item = this.expenses[index];
@@ -202,14 +210,16 @@
 				modal.show();
 				modalContent.animate({top: '35%'}, 300);
 	    	},
+            /**
+             * Saves the edited expense item with the service and updates the item in storage.  Lastly
+             * it redraws the affected charts
+             */
 	    	saveEditedExpenseItem(){
 	    		let item = this.expenses[this.expenseItem.index];
 	    		item.spent = this.expenseItem.value;
 	    		item.remaining = item.budgeted - item.spent;
 	    		let params = {accountID: item.account_id, expenseID: item.id, spent: item.spent, remaining: item.remaining};
 	    		this.$http.post('https://service.michaeldsmithjr.com/api/updateExpense?api_token=' + localStorage.getItem('api_token'), params).then((response)=>{
-                    this.totalExpense -= this.expenses[this.expenseItem.index].spent;
-                    this.totalExpense += item.spent;
                     this.expenses.splice(this.expenseItem.index, 1, item);
                     this.createAccountExpenseChart();
                     this.createAccountExpenseVsIncomeChart();
@@ -222,6 +232,9 @@
 	    			console.log(err);
 	    		});
 	    	},
+            /**
+             * Adds a new expense item by sending a request to the service.  It also redraws the affected charts
+             */
 	    	addExpenseItem(){
 	    		let cat = this.categoryList;
 	    		let ei = this.expenseItem
@@ -229,10 +242,11 @@
 	    		if(index != -1){
 	    			let item = this.expenses[index];
 	    			item.spent += this.expenseItem.value;
+	    			let vm = this;
 	    			item.remaining = item.budgeted - item.spent;
 	    			let params = {accountID: item.account_id, expenseID: item.id, spent: item.spent, remaining: item.remaining};
 	    			this.$http.post('https://service.michaeldsmithjr.com/api/updateExpense?api_token=' + localStorage.getItem('api_token'), params).then((response)=>{
-                        this.totalExpense += item.spent;
+                        //this.totalExpense += vm.expenseItem.value;
 	    				this.expenses.splice(index, 1, item);
 	    				this.createAccountExpenseChart();
 	    				this.createAccountExpenseVsIncomeChart();
@@ -244,15 +258,23 @@
 	    			}).catch((err)=>{
 	    				console.log(err);
 	    			});
-	    		}
+	    		}else{
+                    $('[data-modal-close="addExpense"]').click();
+                    let snackbar = document.querySelector('#toast');
+                    snackbar.MaterialSnackbar.showSnackbar({message: "Expense Item can only be added if they are already on the budget"});
+                }
 	    	},
+            /**
+             * Adds an income item by sending the request to the service and updating the UI and storage. Lastly, it
+             * redraws the affected charts
+             */
 	    	addIncome(){
 	    		let item = {};
 	    		item.name = this.incomeItem.name;
 	    		item.income = this.incomeItem.value;
-	    		let params = {accountID: this.$route.params.accountID, incomeName: item.name, incomeValue: item.value}
+	    		let params = {accountID: this.$route.params.accountID, incomeName: item.name, incomeValue: item.income}
 	    		this.$http.post("https://service.michaeldsmithjr.com/api/createIncomeItem?api_token=" + localStorage.getItem('api_token'), params).then((response)=>{
-	    			this.totalIncome += item.income;
+	    			//this.totalIncome += item.income;
 	    			this.incomeItem.name = '';
 					this.incomeItem.value = 0;
 					this.income.push(item);
@@ -263,11 +285,15 @@
 	    			console.log(err);
 	    		});
 	    	},
+            /**
+             * Draws the expense chart using Google charts
+             */
             createAccountExpenseChart(){
                 let expenseData = new google.visualization.DataTable();
                 expenseData.addColumn('string', 'Category');
                 expenseData.addColumn('number', 'Spent');
                 let vm = this;
+                vm.totalExpense = 0;
                 _.forEach(this.expenses, function(value){
                     expenseData.addRow([value.category, value.spent]);
                     vm.totalExpense += value.spent;
@@ -278,11 +304,15 @@
                 let totalExpenses = new google.visualization.PieChart(document.getElementById('accountExpenses'));
                 totalExpenses.draw(expenseData, options);
             },
+            /**
+             * Draws the income chart using Google charts
+             */
             createAccountIncomeChart(){
                 let incomeData = new google.visualization.DataTable();
                 incomeData.addColumn('string', 'Source');
                 incomeData.addColumn('number', 'Amount');
                 let vm = this;
+                vm.totalIncome = 0;
                 _.forEach(this.income, function(value){
                     incomeData.addRow([value.name, value.income]);
                     vm.totalIncome += value.income;
@@ -293,6 +323,9 @@
                 let totalIncome = new google.visualization.PieChart(document.getElementById('accountIncome'));
                 totalIncome.draw(incomeData, options);
             },
+            /**
+             * Draws the Expense vs. Income chart using Google charts
+             */
             createAccountExpenseVsIncomeChart(){
                 let data = new google.visualization.DataTable();
                 data.addColumn('string', 'Type');
@@ -308,15 +341,43 @@
                 chart.draw(data, options);
             }
 	    },
-	    created(){
-	    	this.income = store.accounts[this.$route.params.accountID].income_items;
-	    	this.expenses = store.accounts[this.$route.params.accountID].expense_items;
-			console.log(store);
-	    },
+        /**
+         * Performs a redirect if the state store is not loaded and gets the income items and
+         * expense items from the state store if it is loaded. Lastly, shows the loading spinner while
+         * the chart library is loading and then calls the functions to create the charts Also hides the
+         * modals and sets up the click handlers for them.
+         */
 	    mounted(){
-            this.createAccountExpenseChart();
-            this.createAccountIncomeChart();
-            this.createAccountExpenseVsIncomeChart();
+			if(!store.loaded){
+				this.$router.push("/");
+				return;
+			}else{
+				this.income = store.accounts[this.$route.params.accountID].income_items;
+				this.expenses = store.accounts[this.$route.params.accountID].expense_items;
+			}
+
+			if(!google.visualization){
+				let spinner = $("#loadingSpinner");
+				spinner.addClass("is-active");
+				spinner.show();
+				let vm = this;
+				google.charts.load('current', {'packages':['corechart']});
+				google.charts.setOnLoadCallback(function(){
+					//console.log("Charts loaded");
+					//console.log(google);
+					spinner.hide();
+					spinner.removeClass("is-active");
+					vm.createAccountExpenseChart();
+					vm.createAccountIncomeChart();
+					vm.createAccountExpenseVsIncomeChart();
+				})
+			}else{
+				//console.log(google);
+				//console.log("Hi");
+				this.createAccountExpenseChart();
+				this.createAccountIncomeChart();
+				this.createAccountExpenseVsIncomeChart();
+			}
 	    	$('.modal').hide();
 			$("[data-modal-open]").click(function (){
 				var modalID = $(this).attr("data-modal-open");

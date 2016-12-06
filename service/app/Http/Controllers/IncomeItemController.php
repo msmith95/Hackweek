@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 
 class IncomeItemController extends Controller
 {
+    /**
+     * Creates new Income items for the user
+     * @param Request $request
+     * @return IncomeItem
+     */
     public function createItem(Request $request){
         $user = $request->user();
         //$incomeItem = json_decode($request->input('incomeItem'), true);
@@ -27,6 +32,11 @@ class IncomeItemController extends Controller
         return $incomeItem;
     }
 
+    /**
+     * Deletes income items from a specific account
+     * @param Request $request
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
+     */
     public function deleteItem(Request $request){
         $incomeID = $request->input('incomeID');
         $accountID = $request->input('accountID');
@@ -43,6 +53,7 @@ class IncomeItemController extends Controller
     }
 
     /**
+     * Finds an income item by id
      * @param $account
      * @param $incomeID
      */
